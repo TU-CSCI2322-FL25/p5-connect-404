@@ -1,7 +1,7 @@
--- Data GameState state = (Board, )
-Data Player = Red | Yellow
-Data Move = (Piece, Player, Row)
-Data Board = [Row]
-Data Pieces = Empty | Red | Yellow
-Data Winner = Player | NoWinner
-Data Row = [Pieces]
+type GameState = (Board, Color) 
+type Move = int 
+type Board = [Column] 
+data Piece = Empty | Full Color deriving (Show, Eq)
+data Winner = Won Player | NoWinner deriving (Show, Eq)
+type Column = [Pieces] 
+data Color = Red | Yellow deriving (Show, Eq)

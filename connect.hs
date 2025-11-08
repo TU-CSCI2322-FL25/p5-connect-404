@@ -42,4 +42,6 @@ emptyBoard = replicate 7 emptyColumn
 gameStart :: GameState
 gameStart = (emptyBoard, Red)
 
+gameStart2 = updateGame gameStart 4
+
 

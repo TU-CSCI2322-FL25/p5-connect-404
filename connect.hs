@@ -6,6 +6,12 @@ data Winner = Won Color | NotWin Color | TieWin Color deriving (Show, Eq)
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
+legalMoves :: GameState -> [Move]
+legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+
+makeLookupList :: Board -> [(Int, Column)]
+makeLookupList board = zip [0..6] board
 --Story 3 compute the result of a legal move
 updateGame :: GameState -> Move -> GameState
 updateGame gs@(board,color) move = (newBoard, opponentColor color)
@@ -36,6 +42,17 @@ opponentColor Yellow = Red
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  
 
+fullColumn :: Column
+fullColumn = replicate 6 (Full Red)  
+
+halfFullColumn :: Column
+halfFullColumn = Full Red : replicate 5 Empty  
+
+oneFullBoard :: Board
+oneFullBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColumn
+
+gameStart :: GameState
+gameStart = (oneFullBoard, Red)
 emptyBoard :: Board
 emptyBoard = replicate 7 emptyColumn  
 

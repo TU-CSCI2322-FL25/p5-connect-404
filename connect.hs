@@ -18,11 +18,15 @@ makeLookupList board = zip [0..6] board
 -- tests stuff 
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  
+
 fullColumn :: Column
-emptyColumn = replicate 6 Full Red  
+fullColumn = replicate 6 (Full Red)  
+
+halfFullColumn :: Column
+halfFullColumn = Full Red : replicate 5 Empty  
 
 oneFullBoard :: Board
-oneFullBoard = (replicate 6 emptyColumn ): fullColumn
+oneFullBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColumn
 
 gameStart :: GameState
 gameStart = (oneFullBoard, Red)

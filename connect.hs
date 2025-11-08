@@ -1,7 +1,7 @@
 type GameState = (Board, Color) 
-type Move = int 
+type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
-data Winner = Won Player | NotWin Player | TieWin Player deriving (Show, Eq)
-type Column = [Pieces] 
+data Winner = Won Color | NotWin Color | TieWin Color deriving (Show, Eq)
+type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)

@@ -12,3 +12,17 @@ legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` s
 
 makeLookupList :: Board -> [(Int, Column)]
 makeLookupList board = zip [0..6] board
+
+
+
+-- tests stuff 
+emptyColumn :: Column
+emptyColumn = replicate 6 Empty  
+fullColumn :: Column
+emptyColumn = replicate 6 Full Red  
+
+oneFullBoard :: Board
+oneFullBoard = (replicate 6 emptyColumn ): fullColumn
+
+gameStart :: GameState
+gameStart = (oneFullBoard, Red)

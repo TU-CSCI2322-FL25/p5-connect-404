@@ -12,22 +12,25 @@ pieceToString Empty         = "Empty  "
 pieceToString (Full Red)    = "Red    "
 pieceToString (Full Yellow) = "Yellow "
 
-columnToString :: Column -> String
-columnToString []     = ""
-columnToString (x:xs) = pieceToString x ++ columnToString xs
+-- columnToString :: Column -> String
+-- columnToString []     = ""
+-- columnToString (x:xs) = pieceToString x ++ columnToString xs
 
-boardToString :: Board -> [String]
-boardToString [] = ""
-boardToString (x:xs) = columnToString x : boardToString xs
+-- boardToString :: Board -> [String]
+-- boardToString [] = ""
+-- boardToString (x:xs) = columnToString x : boardToString xs
 
+-- Transposes board from column-major to row-major (no !!)
 
 transposeBoard :: Board -> [[Piece]]
-transposeBoard board =  foldr (zipWith (:)) (replicate 6 []) board
+transposeBoard board = foldr (zipWith (:)) (replicate 6 []) board
 
-prettyPrint :: GameState -> String
-prettyPrint (board, _) = unlines (map (concatMap pieceToString) (transposeBoard board))
+--This function turns the board — which is stored as a list of columns — into a list of rows so it can be printed like a real Connect 4 grid.
 
-  ++ " 1  2  3  4  5  6  7\n"
+-- Pretty-print the board with numbered columns
+
+prettyPrint :: Board -> String
+prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1  2  3  4  5  6  7 \n"
 
 
 

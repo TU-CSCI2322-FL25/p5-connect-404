@@ -16,9 +16,23 @@ columnToString :: Column -> String
 columnToString []     = ""
 columnToString (x:xs) = pieceToString x ++ columnToString xs
 
-boardToString :: Board -> String
+boardToString :: Board -> [String]
 boardToString [] = ""
-boardToString (x:xs) = columnToString x ++ "\n" ++ boardToString xs
+boardToString (x:xs) = columnToString x : boardToString xs
+
+
+transposeBoard :: Board -> [[Piece]]
+transposeBoard board =  foldr (zipWith (:)) (replicate 6 []) board
+
+prettyPrint :: GameState -> String
+prettyPrint (board, _) = unlines (map (concatMap pieceToString) (transposeBoard board))
+
+  ++ " 1  2  3  4  5  6  7\n"
+
+
+
+boardToStringSideways :: String -> String
+boardToStringSideways badBoard = undefined
 
 
 

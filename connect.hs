@@ -30,31 +30,39 @@ transposeBoard board = foldr (zipWith (:)) (replicate 6 []) board
 -- Pretty-print the board with numbered columns
 
 prettyPrint :: Board -> String
-prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1  2  3  4  5  6  7 \n"
+prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1      2      3      4      5      6      7 \n"
 
-
+--for prettyprint you have to do putStrLn (preetyPrint oneFullBoard) for example for it to work)
 
 boardToStringSideways :: String -> String
 boardToStringSideways badBoard = undefined
 
 
 
-
+--empty column
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  
 
+--full column
 fullColumn :: Column
 fullColumn = replicate 6 (Full Red)  
 
-halfFullColumn :: Column
-halfFullColumn = Full Red : replicate 5 Empty  
+--partial column
+partialColumn :: Column
+partialColumn = Full Red : replicate 5 Empty  
 
+--partially filled board
+partialBoard :: Board
+partialBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColumn
+
+
+--Full Board
 oneFullBoard :: Board
-oneFullBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColumn
+oneFullBoard = replicate 7 fullColumn
 
+--empty board
 emptyBoard :: Board
 emptyBoard = replicate 7 emptyColumn  
 
 gameStart :: GameState
 gameStart = (emptyBoard, Red)
-

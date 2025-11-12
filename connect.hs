@@ -53,7 +53,7 @@ partialColumn = Full Red : replicate 5 Empty
 
 --partially filled board
 partialBoard :: Board
-partialBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColumn
+partialBoard = fullColumn : fullColumn : partialColumn : replicate 4 emptyColumn
 
 
 --Full Board

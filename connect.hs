@@ -53,11 +53,12 @@ oneFullBoard = fullColumn : fullColumn : halfFullColumn : replicate 4 emptyColum
 
 gameStart :: GameState
 gameStart = (oneFullBoard, Red)
+
 emptyBoard :: Board
 emptyBoard = replicate 7 emptyColumn  
 
-gameStart :: GameState
-gameStart = (emptyBoard, Red)
+--gameStart :: GameState
+--gameStart = (emptyBoard, Red)
 
 gameStart2 = updateGame gameStart 4
 

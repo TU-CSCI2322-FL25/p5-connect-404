@@ -71,7 +71,7 @@ transposeBoard board = foldr (zipWith (:)) (replicate 6 []) board
 prettyPrint :: Board -> String
 prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1      2      3      4      5      6      7 \n"
 
---for prettyprint you have to do putStrLn (preetyPrint oneFullBoard) for example for it to work)
+--for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
 
 boardToStringSideways :: String -> String
 boardToStringSideways badBoard = undefined

@@ -4,7 +4,7 @@ type GameState = (Board, Color)
 type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
-data Winner = Won Color | Ongoing Color | TieWin  deriving (Show, Eq) 
+data Winner = Won Color | Ongoing Color | Tie deriving (Show, Eq) 
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
@@ -13,7 +13,7 @@ data Color = Red | Yellow deriving (Show, Eq)
 --story 2: find the winner
 gameWinner :: GameState -> Winner
 gameWinner (board, nextPlayer)
-    | isFull board  = TieWin 
+    | isFull board  = Tie 
     | otherwise     = checkWin board currPlayer
         where
             currPlayer = opponentColor nextPlayer
@@ -84,6 +84,7 @@ updateColumn (Empty:xs) color = Full color : xs
 updateColumn (x:xs) color = x : updateColumn xs color -}
 
 --updateColumn --> Fogarty said to update board from the bottom 
+--POSSIBLE ERROR CHECK: what if the column is already full?
 updateColumn :: Column -> Color -> Column 
 updateColumn [x] color = [Full color]
 updateColumn (x:y:rest) color
@@ -93,8 +94,6 @@ updateColumn (x:y:rest) color
 --
 
 --updateColumn (E)
-
-
 
 --returns opposite color
 
@@ -150,6 +149,11 @@ boardToStringSideways badBoard = undefined
 --board = [[Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty]]
 
 testcolumn = updateColumn emptyColumn Red
+testColumn2 = updateColumn littleEmptyColumn Red
+testFullMove = updateColumn fullColumn Red
+
+
+littleEmptyColumn = [Empty, Empty, Empty, Empty, Empty, Full Yellow]
 
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  

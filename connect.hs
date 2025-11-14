@@ -13,18 +13,28 @@ data Color = Red | Yellow deriving (Show, Eq)
 
 ----------------------BEGINNING--------------------
 --story 2: find the winner
+{-
 gameWinner :: GameState -> Winner
 gameWinner (board, nextPlayer)
     | isFull board  = Tie 
     | otherwise     = checkWin board currPlayer
         where
-            currPlayer = opponentColor nextPlayer
+            currPlayer = opponentColor nextPlayer -}
+
+
 
  {-    let 
         currPlayer = opponentColor nextPlayer
     in 
         | isFull board == True      = TieWin currPlayer
         | otherwise                 = checkWin board currPlayer -}
+
+gameWinner :: GameState -> Winner
+gameWinner (board, _) 
+    | checkWin board Red    == Won Red    = Won Red
+    | checkWin board Yellow == Won Yellow = Won Yellow
+    | isFull board                        = Tie
+    | otherwise                           = Ongoing
 
 
 checkWin :: Board -> Color -> Winner --could be Won or NotWin (ONGOING)
@@ -92,15 +102,23 @@ updateGame gs@(board,color) move = (newBoard, opponentColor color)
         newBoard = (updateBoard move board color) -}
 
 --Story 6 version:
+
+-- getColumn retrieves the Nth column without using (!!)
+getColumn :: Int -> Board -> Maybe Column
+getColumn _ [] = Nothing
+getColumn 0 (c:_) = Just c
+getColumn n (_:cs) = getColumn (n-1) cs
+
 updateGame :: GameState -> Move -> Maybe GameState
-updateGame (board, color) move
-    | move < 0 || move >= length board = Nothing              -- out of bounds
-    | Empty `notElem` selectedColumn   = Nothing              -- column full
-    | gameWinner (board, color) /= Ongoing = Nothing          -- game already over
-    | otherwise = Just (newBoard, opponentColor color)
-  where
-    selectedColumn = board !! move
-    newBoard = updateBoard move board color
+updateGame (board, color) move =
+    case getColumn move board of
+        Nothing -> Nothing                          -- out of bounds
+        Just col
+            | Empty `notElem` col -> Nothing        -- column full
+            | gameWinner (board, color) /= Ongoing -> Nothing
+            | otherwise ->
+                let newBoard = updateBoard move board color
+                in Just (newBoard, opponentColor color)
 
 
 

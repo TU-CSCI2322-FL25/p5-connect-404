@@ -139,7 +139,10 @@ boardToStringSideways badBoard = undefined
 
 --story 6
 checkValidBoard :: Board -> Bool
-checkValidBoard board = length [x | x <- board, length x == 6] == 7
+checkValidBoard board = length [x | x <- board, checkValidColumn x] == 7
+
+checkValidColumn :: Column -> Bool
+checkValidColumn column = length [x | x <-column, x == Empty, x == Red, x == Yellow] == 6
 
 
 

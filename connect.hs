@@ -65,7 +65,10 @@ isFull board = all (/= Empty) [ head column | column <- board]
 
 updateGame :: GameState -> Move -> GameState
 --possible error handling: what if move is out of bounds for the board?
-updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) then (newBoard, opponentColor color) else (board,color)
+updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) 
+    then if(checkValidBoard newBoard) 
+    then(newBoard, opponentColor color) 
+    else (board,color) else(board,color)
     where
         newBoard = (updateBoard move board color)
 

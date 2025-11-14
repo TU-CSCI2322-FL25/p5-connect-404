@@ -1,4 +1,5 @@
 import Data.List
+--story 1
 type GameState = (Board, Color) 
 type Move = Int 
 type Board = [Column] 
@@ -80,12 +81,6 @@ isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
 --------------------ENDDDDDDDDDD--------------------
 
-legalMoves :: GameState -> [Move]
-legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
-
-makeLookupList :: Board -> [(Int, Column)]
-makeLookupList board = zip [0..6] board
-
 --Story 3 compute the result of a legal move
 
 updateGame :: GameState -> Move -> GameState
@@ -120,6 +115,14 @@ opponentColor :: Color -> Color
 opponentColor Red = Yellow
 opponentColor Yellow = Red
 
+--story 4
+legalMoves :: GameState -> [Move]
+legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+makeLookupList :: Board -> [(Int, Column)]
+makeLookupList board = zip [0..6] board
+
+--story 5
 
 pieceToString :: Piece -> String
 pieceToString Empty         = "Empty  "
@@ -153,6 +156,9 @@ boardToStringSideways badBoard = undefined
 
 
 
+
+
+----------------------------TESTS----------------------------
 --empty column
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  

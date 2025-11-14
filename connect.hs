@@ -4,7 +4,8 @@ type GameState = (Board, Color)
 type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
-data Winner = Won Color | NotWin Color | TieWin Color  deriving (Show, Eq) --can we remove color from TieWin also can we change NotWin to Ongoing or continue--notwin doesn't mean lost so its confusing
+--data Winner = Won Color | NotWin Color | TieWin Color  deriving (Show, Eq) --can we remove color from TieWin also can we change NotWin to Ongoing or continue--notwin doesn't mean lost so its confusing
+data Winner = Won Color | Ongoing | Tie deriving (Show, Eq)
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
@@ -14,7 +15,7 @@ data Color = Red | Yellow deriving (Show, Eq)
 --story 2: find the winner
 gameWinner :: GameState -> Winner
 gameWinner (board, nextPlayer)
-    | isFull board  = TieWin currPlayer
+    | isFull board  = Tie 
     | otherwise     = checkWin board currPlayer
         where
             currPlayer = opponentColor nextPlayer
@@ -29,14 +30,14 @@ gameWinner (board, nextPlayer)
 checkWin :: Board -> Color -> Winner --could be Won or NotWin (ONGOING)
 checkWin board player
     |  checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
-    | otherwise                                                             = NotWin player
+    | otherwise                                                             = Ongoing 
     
      --if any one of these functions return true, then there's a winner
     --checkAllColumns
     --checkAllRows
     --checkallDiagonals
 
---checkAllColumns :: Board -> Color -> Bool
+checkAllColumns :: Board -> Color -> Bool
 checkAllColumns [] player = False
 checkAllColumns columns player = 
     let
@@ -83,13 +84,23 @@ isFull board = all (/= Empty) [ head column | column <- board]
 
 --Story 3 compute the result of a legal move
 
+{-
 updateGame :: GameState -> Move -> GameState
 
 updateGame gs@(board,color) move = (newBoard, opponentColor color)
     where
-        newBoard = (updateBoard move board color)
+        newBoard = (updateBoard move board color) -}
 
-
+--Story 6 version:
+updateGame :: GameState -> Move -> Maybe GameState
+updateGame (board, color) move
+    | move < 0 || move >= length board = Nothing              -- out of bounds
+    | Empty `notElem` selectedColumn   = Nothing              -- column full
+    | gameWinner (board, color) /= Ongoing = Nothing          -- game already over
+    | otherwise = Just (newBoard, opponentColor color)
+  where
+    selectedColumn = board !! move
+    newBoard = updateBoard move board color
 
 
 
@@ -116,8 +127,15 @@ opponentColor Red = Yellow
 opponentColor Yellow = Red
 
 --story 4
+
+--legalMoves :: GameState -> [Move]
+--legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+--Updated Story 4 for story 6:
 legalMoves :: GameState -> [Move]
-legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+legalMoves gs@(board, color)
+    | gameWinner gs /= Ongoing = []   -- no moves after game ends
+    | otherwise = [i | (i, col) <- zip [0..] board, Empty `elem` col]
 
 makeLookupList :: Board -> [(Int, Column)]
 makeLookupList board = zip [0..6] board
@@ -155,7 +173,23 @@ boardToStringSideways :: String -> String
 boardToStringSideways badBoard = undefined
 
 
+--Story 6:
+--Optional Helper function
 
+{-
+ adding a wrapper for interactive testing makes it easy to observe how Story 6 
+ handles invalid moves, because instead of crashing GHCI the function now prints 
+ an error and returns the original game state.
+
+
+playMove :: GameState -> Move -> IO GameState
+playMove gs mv =
+    case updateGame(gs) mv of
+        Nothing -> putStrLn "Invalid move!" >> return gs
+        Just new -> return new
+
+
+-}
 
 
 ----------------------------TESTS----------------------------

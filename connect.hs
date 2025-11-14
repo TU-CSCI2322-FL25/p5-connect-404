@@ -103,10 +103,7 @@ opponentColor Yellow = Red
 
 --story 4
 legalMoves :: GameState -> [Move]
-legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
-
-makeLookupList :: Board -> [(Int, Column)]
-makeLookupList board = zip [0..6] board
+legalMoves (board, color) = [move | (move, Empty:col) <- zip [0..] board]
 
 --story 5
 

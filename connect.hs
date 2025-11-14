@@ -61,7 +61,7 @@ isFull board = all (/= Empty) [ head column | column <- board]
 
 updateGame :: GameState -> Move -> GameState
 
-updateGame gs@(board,color) move = (newBoard, opponentColor color)
+updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) then (newBoard, opponentColor color) else (board, color)
     where
         newBoard = (updateBoard move board color)
 
@@ -142,7 +142,7 @@ checkValidBoard :: Board -> Bool
 checkValidBoard board = length [x | x <- board, checkValidColumn x] == 7
 
 checkValidColumn :: Column -> Bool
-checkValidColumn column = length [x | x <-column, x == Empty, x == Red, x == Yellow] == 6
+checkValidColumn column = length [x | x <-column, x == Empty, x == Full Red, x == Full Yellow] == 6
 
 
 

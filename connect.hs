@@ -127,7 +127,7 @@ pieceToString (Full Yellow) = "Yellow "
 -- Transposes board from column-major to row-major (no !!)
 
 transposeBoard :: Board -> [[Piece]]
-transposeBoard board = foldr (zipWith (:)) (replicate 6 []) board
+transposeBoard board = if(checkValidBoard board) then foldr (zipWith (:)) (replicate 6 []) board else error "bad board"
 
 --This function turns the board — which is stored as a list of columns — into a list of rows so it can be printed like a real Connect 4 grid.
 
@@ -137,9 +137,6 @@ prettyPrint :: Board -> String
 prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1      2      3      4      5      6      7 \n"
 
 --for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
-
-boardToStringSideways :: String -> String
-boardToStringSideways badBoard = undefined
 
 --story 6
 checkValidBoard :: Board -> Bool

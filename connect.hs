@@ -11,18 +11,21 @@ data Color = Red | Yellow deriving (Show, Eq)
 
 
 --story 2: find the winner
+--SHOULD JUST CHECK BOTH PLAYERS
 gameWinner :: GameState -> Winner
-gameWinner (board, nextPlayer)
-    | isFull board  = Tie 
-    | otherwise     = checkWin board currPlayer
-        where
-            currPlayer = opponentColor nextPlayer
+gameWinner (board, player)
+    | isFull board                              = Tie 
+    | checkWin board  && (player == Red)        = Won Yellow
+    | checkWin board  && (player == Yellow)     = Won Red
 
 
-checkWin :: Board -> Color -> Winner --could be Won or Ongoing
-checkWin board player
-    | checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
-    | otherwise                                                            = Ongoing player
+
+
+--SHOULD RETURN A BOOL!! 
+checkWin :: Board -> Bool --could be Won or Ongoing
+checkWin board = checkAllColumns board Red || checkAllColumns board Yellow || checkRowsAndDiagonals board Red || checkRowsAndDiagonals board Yellow
+ {-    | checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
+    | otherwise                                                            = Ongoing player -}
     
     --if any one of these functions return true, then there's a winner
     --checkAllColumns
@@ -47,6 +50,7 @@ checkRowsAndDiagonals (c1:c2:c3:c4:rest) player =
         where
             winner = (Full player, Full player, Full player, Full player)
             checkARow c1 c2 c3 c4 = winner `elem` (zip4 c1 c2 c3 c4)
+checkRowsAndDiagonals _ player = False
             --goes down a section of 4 columns
 --we have two sliding windows: one window moves like c1:c2:c3:c4 -> c2:c3:c4:c5, changing the columns youre looking at.
 --the second window slides down each section of four columns. 
@@ -60,8 +64,8 @@ isFull board = all (/= Empty) [ head column | column <- board]
 --Story 3 compute the result of a legal move
 
 updateGame :: GameState -> Move -> GameState
-
-updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) then (newBoard, opponentColor color) else (board, color)
+--possible error handling: what if move is out of bounds for the board?
+updateGame gs@(board,color) move = (newBoard, opponentColor color)
     where
         newBoard = (updateBoard move board color)
 
@@ -103,7 +107,10 @@ opponentColor Yellow = Red
 
 --story 4
 legalMoves :: GameState -> [Move]
-legalMoves (board, color) = [move | (move, Empty:col) <- zip [0..] board]
+legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+makeLookupList :: Board -> [(Int, Column)]
+makeLookupList board = zip [0..6] board
 
 --story 5
 
@@ -139,10 +146,7 @@ boardToStringSideways badBoard = undefined
 
 --story 6
 checkValidBoard :: Board -> Bool
-checkValidBoard board = length [x | x <- board, checkValidColumn x] == 7
-
-checkValidColumn :: Column -> Bool
-checkValidColumn column = length [x | x <-column, x == Empty, x == Full Red, x == Full Yellow] == 6
+checkValidBoard board = length [x | x <- board, length x == 6] == 7
 
 
 
@@ -190,15 +194,15 @@ emptyBoard = replicate 7 emptyColumn
 
 --testBoard :: GameState
 --testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
-testWorkVerticalWin = gameWinner testBoard
+testWorkVerticalWin = gameWinner testBoard --expected: WOn red
     where 
         testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
 
-testWorkHorizontalWin = gameWinner testBoard
+testWorkHorizontalWin = gameWinner testBoard --expected: won red
     where
         testBoard = ([[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Full Yellow, Full Yellow],[Empty, Empty, Empty, Empty, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Yellow],[Empty, Empty, Empty, Empty, Full Red, Full Yellow], [Empty, Empty, Empty, Empty, Full Red, Full Yellow]], Yellow)
 
-testpleaseWorkDiagonalWin = gameWinner testBoard
+testpleaseWorkDiagonalWin = gameWinner testBoard --expected: won yellow
     where
         testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
 

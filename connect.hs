@@ -1,5 +1,5 @@
 import Data.List
---story 1
+
 type GameState = (Board, Color) 
 type Move = Int 
 type Board = [Column] 
@@ -37,7 +37,7 @@ checkAllColumns columns player =
     let
         checkOneVertical (s1:rest@(s2:s3:s4:_)) = all (==Full player) [s1,s2,s3,s4] || checkOneVertical rest
         checkOneVertical _ = False
-                            
+
     in any checkOneVertical columns
 
 checkRowsAndDiagonals :: Board -> Color -> Bool
@@ -60,6 +60,12 @@ checkRowsAndDiagonals _ player = False
 isFull :: Board -> Bool --head of all columns are full
 isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
+
+legalMoves :: GameState -> [Move]
+legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+makeLookupList :: Board -> [(Int, Column)]
+makeLookupList board = zip [0..6] board
 
 --Story 3 compute the result of a legal move
 
@@ -133,12 +139,8 @@ pieceToString (Full Yellow) = "Yellow "
 transposeBoard :: Board -> [[Piece]]
 transposeBoard board = if(checkValidBoard board) then foldr (zipWith (:)) (replicate 6 []) board else error "bad board"
 
---This function turns the board — which is stored as a list of columns — into a list of rows so it can be printed like a real Connect 4 grid.
 
--- Pretty-print the board with numbered columns
 
-prettyPrint :: Board -> String
-prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1      2      3      4      5      6      7 \n"
 
 --for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
 

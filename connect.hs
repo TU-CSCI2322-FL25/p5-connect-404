@@ -4,37 +4,29 @@ type GameState = (Board, Color)
 type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
-data Winner = Won Color | NotWin Color | TieWin Color  deriving (Show, Eq) --can we remove color from TieWin also can we change NotWin to Ongoing or continue--notwin doesn't mean lost so its confusing
+data Winner = Won Color | Ongoing Color | TieWin  deriving (Show, Eq) 
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
 
 
-----------------------BEGINNING--------------------
 --story 2: find the winner
 gameWinner :: GameState -> Winner
 gameWinner (board, nextPlayer)
-    | isFull board  = TieWin currPlayer
+    | isFull board  = TieWin 
     | otherwise     = checkWin board currPlayer
         where
             currPlayer = opponentColor nextPlayer
 
- {-    let 
-        currPlayer = opponentColor nextPlayer
-    in 
-        | isFull board == True      = TieWin currPlayer
-        | otherwise                 = checkWin board currPlayer -}
 
-
-checkWin :: Board -> Color -> Winner --could be Won or NotWin (ONGOING)
+checkWin :: Board -> Color -> Winner --could be Won or Ongoing
 checkWin board player
-    |  checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
-    | otherwise                                                             = NotWin player
+    | checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
+    | otherwise                                                            = Ongoing player
     
-     --if any one of these functions return true, then there's a winner
+    --if any one of these functions return true, then there's a winner
     --checkAllColumns
-    --checkAllRows
-    --checkallDiagonals
+    --checkRowsAndDiagonals
 
 --checkAllColumns :: Board -> Color -> Bool
 checkAllColumns [] player = False
@@ -56,30 +48,14 @@ checkRowsAndDiagonals (c1:c2:c3:c4:rest) player =
             winner = (Full player, Full player, Full player, Full player)
             checkARow c1 c2 c3 c4 = winner `elem` (zip4 c1 c2 c3 c4)
             --goes down a section of 4 columns
-            --checkARow (sA:c1) (sB:c2) (sC:c3) (sD:c4) = all (== Full player) [sA, sB, sC, sD] || checkARow c1 c2 c3 c4
-            --checkARow _ _ _ _= False
-                
-
 --we have two sliding windows: one window moves like c1:c2:c3:c4 -> c2:c3:c4:c5, changing the columns youre looking at.
 --the second window slides down each section of four columns. 
-
-
-{- checkAllDiagonals :: Board -> Color -> Bool
-checkAllDiagonals board player  = checkOneDiagonal board player || checkOneDiagonal (reverse board) player
-    where
-        --takes in a diagonal of four from four columns
-        checkOneDiagonal :: Board -> Color -> Bool 
-        checkOneDiagonal ((first:c1):(_:second:c2):(_:_:third:c3):(_:_:_:fourth:c4):rest) player
-            | all (==Full player) [first, second, third, fourth]     = True
-            | otherwise                                         = checkOneDiagonal (c1:c2:c3:c4:rest) player
-        checkOneDiagonal _ player = False -}
 
 
 
 isFull :: Board -> Bool --head of all columns are full
 isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
---------------------ENDDDDDDDDDD--------------------
 
 --Story 3 compute the result of a legal move
 
@@ -102,10 +78,21 @@ updateBoard move (x:xs) color = x:updateBoard (move - 1) xs color
 
 
 --updateColumn
-
+{- --can we change this so that pieces are added to end of list --> so it's like the actual game 
 updateColumn :: Column -> Color -> Column 
 updateColumn (Empty:xs) color = Full color : xs
-updateColumn (x:xs) color = x : updateColumn xs color
+updateColumn (x:xs) color = x : updateColumn xs color -}
+
+--updateColumn --> Fogarty said to update board from the bottom 
+updateColumn :: Column -> Color -> Column 
+updateColumn [x] color = [Full color]
+updateColumn (x:y:rest) color
+    | y == Full Red  || y == Full Yellow  = Full color:y:rest
+    | otherwise                           = x:updateColumn (y:rest) color
+
+--
+
+--updateColumn (E)
 
 
 
@@ -160,6 +147,10 @@ boardToStringSideways badBoard = undefined
 
 ----------------------------TESTS----------------------------
 --empty column
+--board = [[Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty]]
+
+testcolumn = updateColumn emptyColumn Red
+
 emptyColumn :: Column
 emptyColumn = replicate 6 Empty  
 
@@ -203,8 +194,6 @@ testWorkHorizontalWin = gameWinner testBoard
 testpleaseWorkDiagonalWin = gameWinner testBoard
     where
         testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
-
-
 
 
 gameStart :: GameState

@@ -1,11 +1,10 @@
 import Data.List
---story 1
+
 type GameState = (Board, Color) 
 type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
---data Winner = Won Color | NotWin Color | TieWin Color  deriving (Show, Eq) --can we remove color from TieWin also can we change NotWin to Ongoing or continue--notwin doesn't mean lost so its confusing
-data Winner = Won Color | Ongoing | Tie deriving (Show, Eq)
+data Winner = Won Color | NotWin Color | TieWin Color  deriving (Show, Eq) --can we remove color from TieWin also can we change NotWin to Ongoing or continue--notwin doesn't mean lost so its confusing
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
@@ -13,15 +12,12 @@ data Color = Red | Yellow deriving (Show, Eq)
 
 ----------------------BEGINNING--------------------
 --story 2: find the winner
-{-
 gameWinner :: GameState -> Winner
 gameWinner (board, nextPlayer)
-    | isFull board  = Tie 
+    | isFull board  = TieWin currPlayer
     | otherwise     = checkWin board currPlayer
         where
-            currPlayer = opponentColor nextPlayer -}
-
-
+            currPlayer = opponentColor nextPlayer
 
  {-    let 
         currPlayer = opponentColor nextPlayer
@@ -29,31 +25,24 @@ gameWinner (board, nextPlayer)
         | isFull board == True      = TieWin currPlayer
         | otherwise                 = checkWin board currPlayer -}
 
-gameWinner :: GameState -> Winner
-gameWinner (board, _) 
-    | checkWin board Red    == Won Red    = Won Red
-    | checkWin board Yellow == Won Yellow = Won Yellow
-    | isFull board                        = Tie
-    | otherwise                           = Ongoing
-
 
 checkWin :: Board -> Color -> Winner --could be Won or NotWin (ONGOING)
 checkWin board player
     |  checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
-    | otherwise                                                             = Ongoing 
-    
+    | otherwise                                                             = NotWin player
+
      --if any one of these functions return true, then there's a winner
     --checkAllColumns
     --checkAllRows
     --checkallDiagonals
 
-checkAllColumns :: Board -> Color -> Bool
+--checkAllColumns :: Board -> Color -> Bool
 checkAllColumns [] player = False
 checkAllColumns columns player = 
     let
         checkOneVertical (s1:rest@(s2:s3:s4:_)) = all (==Full player) [s1,s2,s3,s4] || checkOneVertical rest
         checkOneVertical _ = False
-                            
+
     in any checkOneVertical columns
 
 checkRowsAndDiagonals :: Board -> Color -> Bool
@@ -69,7 +58,7 @@ checkRowsAndDiagonals (c1:c2:c3:c4:rest) player =
             --goes down a section of 4 columns
             --checkARow (sA:c1) (sB:c2) (sC:c3) (sD:c4) = all (== Full player) [sA, sB, sC, sD] || checkARow c1 c2 c3 c4
             --checkARow _ _ _ _= False
-                
+
 
 --we have two sliding windows: one window moves like c1:c2:c3:c4 -> c2:c3:c4:c5, changing the columns youre looking at.
 --the second window slides down each section of four columns. 
@@ -92,33 +81,21 @@ isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
 --------------------ENDDDDDDDDDD--------------------
 
+legalMoves :: GameState -> [Move]
+legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
+
+makeLookupList :: Board -> [(Int, Column)]
+makeLookupList board = zip [0..6] board
+
 --Story 3 compute the result of a legal move
 
-{-
 updateGame :: GameState -> Move -> GameState
 
 updateGame gs@(board,color) move = (newBoard, opponentColor color)
     where
-        newBoard = (updateBoard move board color) -}
+        newBoard = (updateBoard move board color)
 
---Story 6 version:
 
--- getColumn retrieves the Nth column without using (!!)
-getColumn :: Int -> Board -> Maybe Column
-getColumn _ [] = Nothing
-getColumn 0 (c:_) = Just c
-getColumn n (_:cs) = getColumn (n-1) cs
-
-updateGame :: GameState -> Move -> Maybe GameState
-updateGame (board, color) move =
-    case getColumn move board of
-        Nothing -> Nothing                          -- out of bounds
-        Just col
-            | Empty `notElem` col -> Nothing        -- column full
-            | gameWinner (board, color) /= Ongoing -> Nothing
-            | otherwise ->
-                let newBoard = updateBoard move board color
-                in Just (newBoard, opponentColor color)
 
 
 
@@ -144,120 +121,11 @@ opponentColor :: Color -> Color
 opponentColor Red = Yellow
 opponentColor Yellow = Red
 
---story 4
-
---legalMoves :: GameState -> [Move]
---legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
-
---Updated Story 4 for story 6:
-legalMoves :: GameState -> [Move]
-legalMoves gs@(board, color)
-    | gameWinner gs /= Ongoing = []   -- no moves after game ends
-    | otherwise = [i | (i, col) <- zip [0..] board, Empty `elem` col]
-
-makeLookupList :: Board -> [(Int, Column)]
-makeLookupList board = zip [0..6] board
-
---story 5
-
-pieceToString :: Piece -> String
-pieceToString Empty         = "Empty  "
-pieceToString (Full Red)    = "Red    "
-pieceToString (Full Yellow) = "Yellow "
-
--- columnToString :: Column -> String
--- columnToString []     = ""
--- columnToString (x:xs) = pieceToString x ++ columnToString xs
-
--- boardToString :: Board -> [String]
--- boardToString [] = ""
--- boardToString (x:xs) = columnToString x : boardToString xs
-
--- Transposes board from column-major to row-major (no !!)
-
-transposeBoard :: Board -> [[Piece]]
-transposeBoard board = foldr (zipWith (:)) (replicate 6 []) board
-
---This function turns the board — which is stored as a list of columns — into a list of rows so it can be printed like a real Connect 4 grid.
-
--- Pretty-print the board with numbered columns
-
-prettyPrint :: Board -> String
-prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBoard board))) ++ " 1      2      3      4      5      6      7 \n"
-
---for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
-
-boardToStringSideways :: String -> String
-boardToStringSideways badBoard = undefined
-
-
---Story 6:
---Optional Helper function
-
-{-
- adding a wrapper for interactive testing makes it easy to observe how Story 6 
- handles invalid moves, because instead of crashing GHCI the function now prints 
- an error and returns the original game state.
-
-
-playMove :: GameState -> Move -> IO GameState
-playMove gs mv =
-    case updateGame(gs) mv of
-        Nothing -> putStrLn "Invalid move!" >> return gs
-        Just new -> return new
-
-
--}
-
-
-----------------------------TESTS----------------------------
---empty column
-emptyColumn :: Column
-emptyColumn = replicate 6 Empty  
-
---full column
-fullColumn :: Column
-fullColumn = replicate 6 (Full Red)  
-
---partial column
-partialColumn :: Column
-partialColumn = Full Red : replicate 5 Empty  
-
---partially filled board
-partialBoard :: Board
-partialBoard = fullColumn : fullColumn : partialColumn : replicate 4 emptyColumn
-
-
---Full Board
-oneFullBoard :: Board
-oneFullBoard = replicate 7 fullColumn
-
---empty board
-emptyBoard :: Board
-emptyBoard = replicate 7 emptyColumn  
-
---gameStart :: GameState
---gameStart = (emptyBoard, Red)
-
---gameStart2 = updateGame gameStart 4
-
-
---testBoard :: GameState
---testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
-testWorkVerticalWin = gameWinner testBoard
-    where 
-        testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
-
-testWorkHorizontalWin = gameWinner testBoard
-    where
-        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Full Yellow, Full Yellow],[Empty, Empty, Empty, Empty, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Yellow],[Empty, Empty, Empty, Empty, Full Red, Full Yellow], [Empty, Empty, Empty, Empty, Full Red, Full Yellow]], Yellow)
-
-testpleaseWorkDiagonalWin = gameWinner testBoard
-    where
-        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
 
 
 
 
-gameStart :: GameState
-gameStart = (emptyBoard, Red)
+
+
+
+

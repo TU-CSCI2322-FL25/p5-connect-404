@@ -140,6 +140,9 @@ prettyPrint board = unlines (map (concatMap pieceToString) (reverse (transposeBo
 boardToStringSideways :: String -> String
 boardToStringSideways badBoard = undefined
 
+--story 6
+checkValidBoard :: Board -> Bool
+checkValidBoard board = length [x | x <- board, length x == 6] == 7
 
 
 

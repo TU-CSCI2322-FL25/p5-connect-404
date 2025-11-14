@@ -68,7 +68,8 @@ updateGame :: GameState -> Move -> GameState
 updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) 
     then if(checkValidBoard newBoard) 
     then(newBoard, opponentColor color) 
-    else (board,color) else(board,color)
+    else (board,color) 
+    else(board,color)
     where
         newBoard = (updateBoard move board color)
 

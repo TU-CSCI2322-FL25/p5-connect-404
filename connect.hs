@@ -61,8 +61,6 @@ isFull :: Board -> Bool --head of all columns are full
 isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
 
-legalMoves :: GameState -> [Move]
-legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
 
 makeLookupList :: Board -> [(Int, Column)]
 makeLookupList board = zip [0..6] board
@@ -118,6 +116,7 @@ opponentColor Yellow = Red
 --story 4
 legalMoves :: GameState -> [Move]
 legalMoves (board, color) = [move | (move, Empty:col) <- zip [0..] board]
+
 
 --story 5
 

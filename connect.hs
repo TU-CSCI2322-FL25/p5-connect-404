@@ -1,3 +1,12 @@
+{- Each row is printed top → bottom, exactly like connectboard, using:
+
+It’s Red's turn. <Color>
+0 for empty
+1 for Red
+2 for Yellow
+ -}
+
+
 import Data.List
 
 type GameState = (Board, Color) 
@@ -11,12 +20,14 @@ data Color = Red | Yellow deriving (Show, Eq)
 
 
 --story 2: find the winner
+--story 8: Change game winner to return a Maybe and removed ongoing from Winner
 --SHOULD JUST CHECK BOTH PLAYERS
-gameWinner :: GameState -> Winner
+gameWinner :: GameState -> Maybe Winner
 gameWinner (board, player)
-    | isFull board                              = Tie 
-    | checkWin board  && (player == Red)        = Won Yellow
-    | checkWin board  && (player == Yellow)     = Won Red
+    | isFull board                              = Just Tie 
+    | checkWin board  && (player == Red)        = Just (Won Yellow)
+    | checkWin board  && (player == Yellow)     = Just (Won Red)
+    | otherwise                                 = Nothing
 
 
 
@@ -61,8 +72,6 @@ isFull :: Board -> Bool --head of all columns are full
 isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
 
-legalMoves :: GameState -> [Move]
-legalMoves gs@(board,color) = [fst x | x <- makeLookupList board, Empty `elem` snd x]
 
 makeLookupList :: Board -> [(Int, Column)]
 makeLookupList board = zip [0..6] board

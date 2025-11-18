@@ -17,6 +17,12 @@ data Winner = Won Color | Ongoing Color | Tie deriving (Show, Eq)
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
+--story 12: readGame function
+readGame :: String -> GameState
+readGame str = (board, color)
+    where 
+        color = readFile head
+
 
 
 --story 2: find the winner

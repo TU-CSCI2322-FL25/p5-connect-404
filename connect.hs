@@ -18,10 +18,15 @@ type Column = [Piece]
 data Color = Red | Yellow deriving (Show, Eq)
 
 --story 12: readGame function
-readGame :: String -> GameState
-readGame str = (board, color)
-    where 
-        color = readFile head
+-- does this take in the whole file as one string? ex. Y\nYYYRRR\nYYRYYY\n
+--readGame :: String -> GameState
+--readGame str = ((lines (drop 2 str)), head str)
+  --  where 
+        
+strToPiece :: Char -> Piece 
+strToPiece 'Y' = Full Yellow
+strToPiece 'R' = Full Red
+strToPiece 'E' = Empty
 
 
 

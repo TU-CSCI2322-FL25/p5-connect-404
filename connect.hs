@@ -1,4 +1,5 @@
 import Data.List
+import Control.Monad (when)
 
 type GameState = (Board, Color) 
 type Move = Int 
@@ -193,7 +194,7 @@ emptyBoard = replicate 7 emptyColumn
 
 --testBoard :: GameState
 --testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
-testWorkVerticalWin = gameWinner testBoard --expected: WOn red
+testWorkVerticalWin = gameWinner testBoard --expected: won red
     where 
         testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
 
@@ -205,6 +206,8 @@ testpleaseWorkDiagonalWin = gameWinner testBoard --expected: won yellow
     where
         testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
 
-
+testTieWin = gameWinner testBoard
+    where
+        testBoard = ([[Full Yellow, Full Yellow, Full Yellow, Full Red, Full Red, Full Red],[Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow, Full Yellow],[Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow],[Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Red],[Full Red, Full Yellow, Full Red, Full Yellow, Full Red, Full Red],[Full Red, Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow]],Yellow)
 gameStart :: GameState
 gameStart = (emptyBoard, Red)

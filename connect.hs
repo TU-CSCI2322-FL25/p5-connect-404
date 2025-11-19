@@ -99,11 +99,10 @@ updateColumn (x:xs) color = x : updateColumn xs color -}
 --updateColumn --> Fogarty said to update board from the bottom 
 --POSSIBLE ERROR CHECK: what if the column is already full?
 updateColumn :: Column -> Color -> Column 
-updateColumn [x] color = [Full color]
-updateColumn (x:y:rest) color
-    | y == Full Red  || y == Full Yellow  = Full color:y:rest
-    | otherwise                           = x:updateColumn (y:rest) color
-
+updateColumn (Empty:Empty:rest) color = Empty:(updateColumn (Empty:rest)) color
+updateColumn (Empty:rest)       color =  (piece) :rest
+    where
+        piece = if color == Red then Full Red else Full Yellow
 --
 
 --updateColumn (E)

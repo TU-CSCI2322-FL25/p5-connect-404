@@ -5,7 +5,7 @@ It’s Red's turn. <Color>
 1 for Red
 2 for Yellow
  -}
-
+--test
 
 import Data.List
 

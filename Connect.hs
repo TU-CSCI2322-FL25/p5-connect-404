@@ -17,10 +17,10 @@ data Color = Red | Yellow deriving (Show, Eq)
 --SHOULD JUST CHECK BOTH PLAYERS
 gameWinner :: GameState -> Maybe Winner
 gameWinner (board, player) 
-    | checkWin board  && (player == Red)        = Just (Won Yellow)
-    | checkWin board  && (player == Yellow)     = Just (Won Red)
-    | isFull board                              = Just Tie
-    | otherwise                                 = Nothing
+    | checkWin board Yellow  = Just (Won Yellow)
+    | checkWin board Red     = Just (Won Red)
+    | isFull board           = Just Tie
+    | otherwise              = Nothing
 
 {- Problems with current gameWinner 
 It still depends on player, which makes your result wrong depending on whose turn it is.
@@ -53,8 +53,8 @@ Minimax needs:
 
 
 --SHOULD RETURN A BOOL!! 
-checkWin :: Board -> Bool --could be Won or Ongoing
-checkWin board = checkAllColumns board Red || checkAllColumns board Yellow || checkRowsAndDiagonals board Red || checkRowsAndDiagonals board Yellow
+checkWin :: Board -> Player -> Bool --could be Won or Ongoing
+checkWin board player = checkAllColumns board player || checkRowsAndDiagonals board player
  {-    | checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
     | otherwise                                                            = Ongoing player -}
     

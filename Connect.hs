@@ -178,6 +178,7 @@ whoWillWin :: GameState -> Winner
 whoWillWin gs@(board,color) = case gameWinner gs of
     Nothing -> chooseMove listOfFutureGame color
     Just x  -> x
+    otherwise -> error "please don't do what you just did"
     where
          listOfFutureGame = [updateGame gs x | x <- legalMoves gs] 
 

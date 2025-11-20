@@ -168,13 +168,6 @@ transposeBoard board = if(checkValidBoard board) then foldr (zipWith (:)) (repli
 checkValidBoard :: Board -> Bool
 checkValidBoard board = length [x | x <- board, length x == 6] == 7
 
-
---for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
-
---story 6
-checkValidBoard :: Board -> Bool
-checkValidBoard board = length [x | x <- board, length x == 6] == 7
-
 isValidMove :: Move -> GameState -> Bool
 isValidMove n game = n `elem` legalMoves game 
 
@@ -218,54 +211,6 @@ bestMove game@(board,color) = case filterForWin (Won color) of
 
 
 ----------------------------TESTS----------------------------
---empty column
---board = [[Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty]]
-
-testcolumn = updateColumn emptyColumn Red
-testColumn2 = updateColumn littleEmptyColumn Red
-testFullMove = updateColumn fullColumn Red
-
-
-littleEmptyColumn = [Empty, Empty, Empty, Empty, Empty, Full Yellow]
-
-emptyColumn :: Column
-emptyColumn = replicate 6 Empty  
-
---full column
-fullColumn :: Column
-fullColumn = replicate 6 (Full Red)  
-
---partial column
-partialColumn :: Column
-partialColumn = Full Red : replicate 5 Empty  
-
---partially filled board
-partialBoard :: Board
-partialBoard = fullColumn : fullColumn : partialColumn : replicate 4 emptyColumn
-
-
---Full Board
-oneFullBoard :: Board
-oneFullBoard = replicate 7 fullColumn
-
---empty board
-emptyBoard :: Board
-emptyBoard = replicate 7 emptyColumn  
-
---gameStart :: GameState
---gameStart = (emptyBoard, Red)
-
---gameStart2 = updateGame gameStart 4
-
-testWorkHorizontalWin = gameWinner testBoard --expected: won red
-    where
-        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Full Yellow, Full Yellow],[Empty, Empty, Empty, Empty, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Yellow],[Empty, Empty, Empty, Empty, Full Red, Full Yellow], [Empty, Empty, Empty, Empty, Full Red, Full Yellow]], Yellow)
-
-testpleaseWorkDiagonalWin = gameWinner testBoard --expected: won yellow
-    where
-        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
-
-
 --these are variables tha make it a lot easier to right boards
 y = Full Yellow
 r = Full Red

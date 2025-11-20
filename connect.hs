@@ -203,7 +203,7 @@ bestMove game@(board,color) = case filterForWin (Won color) of
         [x] -> fst x
         (x:xs) -> fst x
         [] -> case filterForWin (Won (opponentColor color)) of 
-            [] -> error "i dont even know how you did this"
+            [] -> error "i dont even know how you did this??? seriously text me if you get this error - 210 847 8314"
             [x] -> fst x
             (x:xs) -> fst x
     where

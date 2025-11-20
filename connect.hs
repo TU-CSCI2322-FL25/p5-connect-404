@@ -198,14 +198,14 @@ chooseMove futures color =  if Won color `elem` futureWins
 bestMove :: GameState -> Move
 bestMove game@(board,color) = case filterForWin (Won color) of
     [x] -> fst x
-    (x:xs) -> fst x
+    (x:y:xs) -> fst y
     [] -> case filterForWin Tie of
         [x] -> fst x
-        (x:xs) -> fst x
+        (x:y:xs) -> fst y
         [] -> case filterForWin (Won (opponentColor color)) of 
             [] -> error "i dont even know how you did this??? seriously text me if you get this error - 210 847 8314"
             [x] -> fst x
-            (x:xs) -> fst x
+            (x:y:xs) -> fst y
     where
         lookUpList = [(x,whoWillWin (updateGame game x)) | x <- legalMoves game]
         filterForWin win = filter(\x -> snd x == win) lookUpList

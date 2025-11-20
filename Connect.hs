@@ -1,12 +1,4 @@
-{- Each row is printed top → bottom, exactly like connectboard, using:
-
-It’s Red's turn. <Color>
-0 for empty
-1 for Red
-2 for Yellow
- -}
---test
-
+module Connect where
 import Data.List
 
 type GameState = (Board, Color) 
@@ -16,19 +8,6 @@ data Piece = Empty | Full Color deriving (Show, Eq)
 data Winner = Won Color | Ongoing Color | Tie deriving (Show, Eq) 
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
-
---story 12: readGame function
--- does this take in the whole file as one string? ex. Y\nYYYRRR\nYYRYYY\n
---readGame :: String -> GameState
---readGame str = ((lines (drop 2 str)), head str)
-  --  where 
-        
-strToPiece :: Char -> Piece 
-strToPiece 'Y' = Full Yellow
-strToPiece 'R' = Full Red
-strToPiece 'E' = Empty
-
-
 
 --story 2: find the winner
 --story 8: Change game winner to return a Maybe and removed ongoing from Winner

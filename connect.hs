@@ -196,10 +196,19 @@ chooseMove futures color =  if Won color `elem` futureWins
 
 --story 10
 bestMove :: GameState -> Move
-bestMove game@(board,color) = if(null $ filter(snd == Won color) lookUpList) then if(null $ filter(snd == Tie) lookUpList) then fst $ head lookUpList else fst $ head lookUpList else fst $ head lookUpList
+bestMove game@(board,color) = case filterForWin (Won color) of
+    [x] -> fst x
+    (x:xs) -> fst x
+    [] -> case filterForWin Tie of
+        [x] -> fst x
+        (x:xs) -> fst x
+        [] -> case filterForWin (Won (opponentColor color)) of 
+            [] -> error "i dont even know how you did this"
+            [x] -> fst x
+            (x:xs) -> fst x
     where
-        futureMove = legalMoves game
-        lookUpList = [(x,whoWillWin (updateGame game x)) | x <- futureMove]
+        lookUpList = [(x,whoWillWin (updateGame game x)) | x <- legalMoves game]
+        filterForWin win = filter(\x -> snd x == win) lookUpList
 
 
 
@@ -264,29 +273,29 @@ e = Empty
 --this is a board that results in a tie 
 tieBoard = [
     [e, r, r, y, y, r],   
-    [r, y, r, y, r, y],   
-    [y, r, y, r, y, r],   
-    [y, r, y, r, y, r],   
-    [r, r, y, y, y, r],   
-    [r, y, r, y, r, y],   
-    [y, r, r, y, r, y]]
+    [e, y, r, y, r, y],   
+    [e, r, y, r, y, r],   
+    [e, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
 
 redBoard = [
-    [e, r, r, r, y, r],   
-    [r, y, r, y, r, y],   
-    [y, r, y, r, y, r],   
-    [y, r, y, r, y, r],   
-    [y, r, y, y, y, r],   
-    [r, y, r, y, r, y],   
-    [y, r, r, y, r, y]]
+    [e, r, y, r, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, y, r, y, r],   
+    [e, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
 
 yellowBoard = [
     [e, r, r, y, r, r],   
     [y, y, r, y, r, y],   
     [y, r, y, r, y, r],   
-    [y, r, y, r, y, r],   
-    [r, r, y, y, y, r],   
-    [r, y, r, y, r, y],   
-    [y, r, r, y, r, y]]
+    [r, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
 
 

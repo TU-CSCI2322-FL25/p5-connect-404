@@ -1,11 +1,12 @@
 import Data.List
+import Data.Maybe
 import Control.Monad (when)
 
 type GameState = (Board, Color) 
 type Move = Int 
 type Board = [Column] 
 data Piece = Empty | Full Color deriving (Show, Eq)
-data Winner = Won Color | Ongoing Color | Tie deriving (Show, Eq) 
+data Winner = Won Color | Tie deriving (Show, Eq) 
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
 
@@ -13,13 +14,41 @@ data Color = Red | Yellow deriving (Show, Eq)
 
 --story 2: find the winner
 --SHOULD JUST CHECK BOTH PLAYERS
-gameWinner :: GameState -> Winner
-gameWinner (board, player)
-    | isFull board                              = Tie 
-    | checkWin board  && (player == Red)        = Won Yellow
-    | checkWin board  && (player == Yellow)     = Won Red
+gameWinner :: GameState -> Maybe Winner
+gameWinner (board, player) 
+    | checkWin board  && (player == Red)        = Just (Won Yellow)
+    | checkWin board  && (player == Yellow)     = Just (Won Red)
+    | isFull board                              = Just Tie
+    | otherwise                                 = Nothing
+
+{- Problems with current gameWinner 
+It still depends on player, which makes your result wrong depending on whose turn it is.
+
+Example of the bug:
+
+Yellow just won
+
+But player == Red
+→ your code incorrectly says Red won Yellow’s victory.
+
+Correct Version: gameWinner :: GameState -> Maybe Winner
+gameWinner (board, _) 
+    | checkWin board Red    = Just (Won Red)
+    | checkWin board Yellow = Just (Won Yellow)
+    | isFull board          = Just Tie
+    | otherwise             = Nothing
+
+Checks both players independently
+Never relies on turn order
+Returns Nothing for ongoing games
+Story 8 is training  for minimax recursion (Story 9).
+
+Minimax needs:
+    a function that says “this state is terminal, here is the winner”
+    OR returns Nothing if you must continue recursing
 
 
+-}
 
 
 --SHOULD RETURN A BOOL!! 
@@ -61,10 +90,6 @@ checkRowsAndDiagonals _ player = False
 isFull :: Board -> Bool --head of all columns are full
 isFull board = all (/= Empty) [ head column | column <- board]
 -- head (reverse column) --> for if 1st element of col is bottom
-
-
-makeLookupList :: Board -> [(Int, Column)]
-makeLookupList board = zip [0..6] board
 
 --Story 3 compute the result of a legal move
 
@@ -117,7 +142,6 @@ opponentColor Yellow = Red
 legalMoves :: GameState -> [Move]
 legalMoves (board, color) = [move | (move, Empty:col) <- zip [0..] board]
 
-
 --story 5
 
 pieceToString :: Piece -> String
@@ -138,16 +162,90 @@ pieceToString (Full Yellow) = "Yellow "
 transposeBoard :: Board -> [[Piece]]
 transposeBoard board = if(checkValidBoard board) then foldr (zipWith (:)) (replicate 6 []) board else error "bad board"
 
-
-
-
 --for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
 
 --story 6
 checkValidBoard :: Board -> Bool
 checkValidBoard board = length [x | x <- board, length x == 6] == 7
 
+isValidMove :: Move -> GameState -> Bool
+isValidMove n game = n `elem` legalMoves game 
 
+
+--story9branch
+whoWillWin :: GameState -> Winner
+whoWillWin gs@(board,color) = case gameWinner gs of
+    Nothing -> chooseMove listOfFutureGame color
+    Just x  -> x
+    where
+         listOfFutureGame = [updateGame gs x | x <- legalMoves gs] 
+
+
+chooseMove :: [GameState] -> Color -> Winner
+chooseMove futures color =  if Won color `elem` futureWins 
+                            then Won color 
+                            else if Tie `elem` futureWins 
+                            then Tie 
+                            else Won (opponentColor color)
+                            where
+                                futureWins = [whoWillWin x | x <- futures]
+
+
+--story 10
+bestMove :: GameState -> Move
+bestMove game@(board,color) = case filterForWin (Won color) of
+    [x] -> fst x
+    (x:y:xs) -> fst y
+    [] -> case filterForWin Tie of
+        [x] -> fst x
+        (x:y:xs) -> fst y
+        [] -> case filterForWin (Won (opponentColor color)) of 
+            [] -> error "i dont even know how you did this??? seriously text me if you get this error - 210 847 8314"
+            [x] -> fst x
+            (x:y:xs) -> fst y
+    where
+        lookUpList = [(x,whoWillWin (updateGame game x)) | x <- legalMoves game]
+        filterForWin win = filter(\x -> snd x == win) lookUpList
+
+
+
+
+----------------------------TESTS----------------------------
+--these are variables tha make it a lot easier to right boards
+y = Full Yellow
+r = Full Red
+e = Empty
+--this is a full board with no winners
+--FullBoardNoWinners = 
+
+
+--this is a board that results in a tie 
+tieBoard = [
+    [e, r, r, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, y, r, y, r],   
+    [e, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
+
+redBoard = [
+    [e, r, y, r, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, y, r, y, r],   
+    [e, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
+
+yellowBoard = [
+    [e, r, r, y, r, r],   
+    [y, y, r, y, r, y],   
+    [y, r, y, r, y, r],   
+    [r, r, y, r, y, r],   
+    [e, r, y, y, y, r],   
+    [e, y, r, y, r, y],   
+    [e, r, r, y, r, y]]
 
 
 ----------------------------TESTS----------------------------

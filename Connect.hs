@@ -53,7 +53,7 @@ Minimax needs:
 
 
 --SHOULD RETURN A BOOL!! 
-checkWin :: Board -> Player -> Bool --could be Won or Ongoing
+checkWin :: Board -> Color -> Bool --could be Won or Ongoing
 checkWin board player = checkAllColumns board player || checkRowsAndDiagonals board player
  {-    | checkAllColumns board player || checkRowsAndDiagonals board player   = Won player
     | otherwise                                                            = Ongoing player -}

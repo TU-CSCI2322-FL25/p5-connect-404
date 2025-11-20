@@ -1,5 +1,6 @@
 import Data.List
 import Data.Maybe
+import Control.Monad (when)
 
 type GameState = (Board, Color) 
 type Move = Int 
@@ -123,11 +124,10 @@ updateColumn (x:xs) color = x : updateColumn xs color -}
 --updateColumn --> Fogarty said to update board from the bottom 
 --POSSIBLE ERROR CHECK: what if the column is already full?
 updateColumn :: Column -> Color -> Column 
-updateColumn [x] color = [Full color]
-updateColumn (x:y:rest) color
-    | y == Full Red  || y == Full Yellow  = Full color:y:rest
-    | otherwise                           = x:updateColumn (y:rest) color
-
+updateColumn (Empty:Empty:rest) color = Empty:(updateColumn (Empty:rest)) color
+updateColumn (Empty:rest)       color =  (piece) :rest
+    where
+        piece = if color == Red then Full Red else Full Yellow
 --
 
 --updateColumn (E)
@@ -162,7 +162,11 @@ pieceToString (Full Yellow) = "Yellow "
 transposeBoard :: Board -> [[Piece]]
 transposeBoard board = if(checkValidBoard board) then foldr (zipWith (:)) (replicate 6 []) board else error "bad board"
 
+--for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
 
+--story 6
+checkValidBoard :: Board -> Bool
+checkValidBoard board = length [x | x <- board, length x == 6] == 7
 
 
 --for prettyprint you have to do putStrLn (prettyPrint oneFullBoard) for example for it to work)
@@ -299,3 +303,63 @@ yellowBoard = [
     [e, r, r, y, r, y]]
 
 
+----------------------------TESTS----------------------------
+--empty column
+--board = [[Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty]]
+
+testcolumn = updateColumn emptyColumn Red
+testColumn2 = updateColumn littleEmptyColumn Red
+testFullMove = updateColumn fullColumn Red
+
+
+littleEmptyColumn = [Empty, Empty, Empty, Empty, Empty, Full Yellow]
+
+emptyColumn :: Column
+emptyColumn = replicate 6 Empty  
+
+--full column
+fullColumn :: Column
+fullColumn = replicate 6 (Full Red)  
+
+--partial column
+partialColumn :: Column
+partialColumn = Full Red : replicate 5 Empty  
+
+--partially filled board
+partialBoard :: Board
+partialBoard = fullColumn : fullColumn : partialColumn : replicate 4 emptyColumn
+
+
+--Full Board
+oneFullBoard :: Board
+oneFullBoard = replicate 7 fullColumn
+
+--empty board
+emptyBoard :: Board
+emptyBoard = replicate 7 emptyColumn  
+
+--gameStart :: GameState
+--gameStart = (emptyBoard, Red)
+
+--gameStart2 = updateGame gameStart 4
+
+
+--testBoard :: GameState
+--testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
+testWorkVerticalWin = gameWinner testBoard --expected: won red
+    where 
+        testBoard = ([[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Full Red, Full Red, Full Red, Full Red],[Empty, Empty, Empty ,Empty, Empty, Full Yellow],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty ,Empty, Empty, Full Yellow]], Yellow)
+
+testWorkHorizontalWin = gameWinner testBoard --expected: won red
+    where
+        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Full Yellow, Full Yellow],[Empty, Empty, Empty, Empty, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Yellow],[Empty, Empty, Empty, Empty, Full Red, Full Yellow], [Empty, Empty, Empty, Empty, Full Red, Full Yellow]], Yellow)
+
+testpleaseWorkDiagonalWin = gameWinner testBoard --expected: won yellow
+    where
+        testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
+
+testTieWin = gameWinner testBoard
+    where
+        testBoard = ([[Full Yellow, Full Yellow, Full Yellow, Full Red, Full Red, Full Red],[Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow, Full Yellow],[Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow],[Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Red],[Full Red, Full Yellow, Full Red, Full Yellow, Full Red, Full Red],[Full Red, Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow]],Yellow)
+gameStart :: GameState
+gameStart = (emptyBoard, Red)

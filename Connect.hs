@@ -178,7 +178,6 @@ whoWillWin :: GameState -> Winner
 whoWillWin gs@(board,color) = case gameWinner gs of
     Nothing -> chooseMove listOfFutureGame color
     Just x  -> x
-    otherwise -> error "please don't do what you just did"
     where
          listOfFutureGame = [updateGame gs x | x <- legalMoves gs] 
 
@@ -195,19 +194,20 @@ chooseMove futures color =  if Won color `elem` futureWins
 
 --story 10
 bestMove :: GameState -> Move
-bestMove game@(board,color) = case filterForWin (Won color) of
-    [x] -> fst x
-    (x:y:xs) -> fst y
-    [] -> case filterForWin Tie of
-        [x] -> fst x
-        (x:y:xs) -> fst y
-        [] -> case filterForWin (Won (opponentColor color)) of 
-            [] -> error "i dont even know how you did this??? seriously text me if you get this error - 210 847 8314"
-            [x] -> fst x
-            (x:y:xs) -> fst y
+bestMove game@(board,color) = 
+    if null legalList 
+        then error "BLOW UP AHHHHH" 
+        else
+            case lookup (Won color) lookUpList of
+                Just x ->  x
+                Nothing -> 
+                    case lookup Tie lookUpList of
+                        Just x ->  x
+                        Nothing -> snd $ head lookUpList
     where
-        lookUpList = [(x,whoWillWin (updateGame game x)) | x <- legalMoves game]
+        lookUpList = [(whoWillWin (updateGame game x),x) | x <- legalList]
         filterForWin win = filter(\x -> snd x == win) lookUpList
+        legalList = legalMoves game
 
 
 

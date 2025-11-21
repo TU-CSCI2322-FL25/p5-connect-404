@@ -65,7 +65,5 @@ main = do
         move = undefined :: Move --bestMove game
     print (move) -}
 
-    
-
 
 

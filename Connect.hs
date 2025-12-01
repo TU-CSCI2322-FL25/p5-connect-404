@@ -96,11 +96,12 @@ isFull board = all (/= Empty) [ head column | column <- board]
 
 updateGame :: GameState -> Move -> GameState
 --possible error handling: what if move is out of bounds for the board?
-updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color)) 
-    then if(checkValidBoard newBoard) 
-    then(newBoard, opponentColor color) 
-    else (board,color) 
-    else(board,color)
+updateGame gs@(board,color) move = 
+    if(move `elem` legalMoves gs) 
+        then if(checkValidBoard newBoard) 
+            then(newBoard, opponentColor color) 
+            else gs 
+        else error "illegal move dont do that pls"
     where
         newBoard = (updateBoard move board color)
 
@@ -109,11 +110,10 @@ updateGame gs@(board,color) move = if(move `elem` legalMoves (board,color))
 
 
 updateBoard ::  Move ->  Board -> Color -> Board
-updateBoard 0 [x] color     = (updateColumn x color) :[]
-updateBoard 0 (x:xs) color  = (updateColumn x color) :xs
-updateBoard move (x:xs) color = x:updateBoard (move - 1) xs color
-
---updateColumn --> Fogarty said to update board from the bottom 
+updateBoard 0 (col:cols) color    = (updateColumn col color):cols
+updateBoard move (col:cols) color = col:updateBoard (move - 1) cols color
+updateBoard _ _ _        = error "something has gone terribly wrong"
+--updateColumn --> Fogarty s to update board from the bottom 
 
 
 --updateColumn

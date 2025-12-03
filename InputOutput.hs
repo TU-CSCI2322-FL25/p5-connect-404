@@ -51,7 +51,7 @@ main = do
             contents <- readFile file
             let
                 game = readGame contents
-                move = undefined :: Move --bestMove game
+                move = bestMove game
             print (move)
 
 

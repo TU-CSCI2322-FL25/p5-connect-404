@@ -44,15 +44,17 @@ pieceToStr (Full Yellow) = Just 'Y'
 pieceToStr (Full Red) = Just 'R'
 pieceToStr Empty = Just 'E'
 -- story 22-27 flags: 
-data Flag = Winner | Depth String | Help | Move String deriving (Eq, Show)
+data Flag = Winner | Depth String | Help | Move String | Verbose deriving (Eq, Show)
 
 
 options :: [OptDescr Flag]
 options =
-  [ Option ['w'] ["winner"]    (NoArg Winner)          "print best move for given game",
+  [ Option ['w'] ["winner"]    (NoArg Winner)          "Prints the best move for a given game",
     Option ['d'] ["depth"]     (ReqArg Depth "<#>")    "Allows the user to specify <#> as a cutoff depth.",
     Option ['h'] ["help"]      (NoArg Help)            "Print usage information and exit.",
-    Option ['m'] ["move"]     (ReqArg Move "<#>")      "Makes the move at <#> and returns the resulting board to stdout "
+    Option ['m'] ["move"]      (ReqArg Move "<#>")     "Makes the move at <#> and returns the resulting board to stdout ",
+    Option ['v'] ["verbose"]   (NoArg Verbose)            "Outputs both the move and a description of how good it is: win, lose, tie, or a rating."
+
   ]
 --story 14: IO functions 
 -- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
@@ -60,44 +62,60 @@ main :: IO ()
 main = do
     args <- getArgs
     let opts@(flags, nonFlags, errors) = getOpt Permute options args-- non flags is the file
+
     if not (null errors) || Help `elem` flags
         then printHelp opts 
-       -- else if null nonFlags then
-            --putStrLn "no file provided" i thikn the super fancy help i stole should replae this 
-        else if Winner `elem` flags 
-            then do
-                let file = head nonFlags
-                contents <- readFile file
-                let
-                    game = readGame contents
-                    move = bestMove game
-                print move
-        else if  hasDepth flags 
-            then do
-                let depth = getDepth flags
-                print depth -- this is for test
-                -- use depth for a funtion that doesnt exist yet and get result and print like winner
-        else if hasMove flags -- im not sure what flags can be called at the same time?
-            then do
-                let file = head nonFlags
-                contents <- readFile file
-                let 
-                    move = getMove flags
-                    game = readGame contents
-                    newGame = updateGame game move
-                    gameString = showGame newGame
-                putStrLn gameString
+       
+    else if Winner `elem` flags 
+        then runWinner nonFlags
+        
+    else if  hasDepth flags 
+        then runDepth flags
 
-            else putStrLn "Invalid arguments"
+    else if hasMove flags 
+        then runMove flags nonFlags
+
+    else putStrLn "Invalid arguments"
 
 
-
--- stolen from fortunes.hs
+--flag functions
 printHelp :: ([Flag], [String], [String]) -> IO ()
 printHelp (flags, inputs, errors) =
   do putStrLn $ show (flags,inputs,errors) 
      putStrLn $ concat errors
      putStrLn $ usageInfo "Fortunes [options] [files]" options
+
+
+
+
+runWinner nonFlags = do
+    let file = head nonFlags
+    contents <- readFile file
+    let
+        game = readGame contents
+        move = bestMove game
+    print move
+
+
+runDepth flags = do 
+    let depth = getDepth flags
+    print depth -- this is for test
+            -- use depth for a funtion that doesnt exist yet and get result and print like winner
+
+
+runMove flags nonFlags = do
+    let file = head nonFlags
+    contents <- readFile file
+    let 
+        move = getMove flags
+        game = readGame contents
+        newGame = updateGame game move
+        gameString =
+            if hasVerbose flags 
+            then "something" ++ "\n"++ (showGame newGame)
+            else  showGame newGame
+            
+    putStrLn gameString
 
 
 
@@ -127,32 +145,10 @@ hasMove = any isMove
     isMove (Move _) = True
     isMove _         = False
 
+hasVerbose :: [Flag] -> Bool
+hasVerbose = any isVerbose
+  where
+    isVerbose (Verbose) = True
+    isVerbose _         = False
+
     
-    {-
-main = do
-    args <- getArgs
-    if null args
-        then putStrLn "No file provided"
-        else do 
-            let file = [a | arg <- args, a <- arg] --hahaahaha...
-            contents <- readFile file
-            let
-                game = readGame contents
-                move = bestMove game
-            print (move)
-
-    -}
-    
-
-
-
-    {- main = do
-    putStrLn "Enter File Name"
-    fileName <- getLine
-    contents <- readFile fileName
-    let 
-        game = readGame contents
-        move = undefined :: Move --bestMove game
-    print (move) 
-    
-    -}

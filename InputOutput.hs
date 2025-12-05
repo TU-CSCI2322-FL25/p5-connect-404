@@ -58,11 +58,10 @@ main :: IO ()
 main = do
     args <- getArgs
     let opts@(flags, nonFlags, errors) = getOpt Permute options args-- non flags is the file
-    
-    if not (null errors) 
-        then putStrLn "extra stuff i think"
-        else if null nonFlags then
-            putStrLn "no file provided"
+    if not (null errors) || Help `elem` flags
+        then printHelp opts 
+       -- else if null nonFlags then
+            --putStrLn "no file provided" i thikn the super fancy help i stole should replae this 
         else if Winner `elem` flags 
             then do
                 let file = head nonFlags
@@ -75,18 +74,25 @@ main = do
             then do
                 let depth = getDepth flags
                 print depth -- this is for test
-                -- use depth for a funtion that doesnt exist yet and get result and print 
-        else if Help `elem` flags
-            then do 
-                putStrLn "Help message!!!!!!!!!!"
+                -- use depth for a funtion that doesnt exist yet and get result and print like winner
+                
                 
             else putStrLn "Invalid arguments"
 
 
 
+-- stolen from fortunes.hs
+printHelp :: ([Flag], [String], [String]) -> IO ()
+printHelp (flags, inputs, errors) =
+  do putStrLn $ show (flags,inputs,errors) 
+     putStrLn $ concat errors
+     putStrLn $ usageInfo "Fortunes [options] [files]" options
+
+
+
     
 getDepth :: [Flag] -> Int
-getDepth [] = 4 --default idk if i shold dd this or use a Maybe
+getDepth [] = 4 --default idk if i shold do this or use a Maybe
 getDepth (Depth str:_) = read str
 getDepth (_:flags) = getDepth flags
 
@@ -96,6 +102,7 @@ hasDepth = any isDepth
   where
     isDepth (Depth _) = True
     isDepth _         = False
+
     
     {-
 main = do

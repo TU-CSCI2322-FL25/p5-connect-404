@@ -3,6 +3,7 @@ import System.Environment
 import Connect
 --import Data.Conduit.List (catMaybes)
 import Data.Maybe
+import System.Console.GetOpt -- for flags
 
 --story 12: readGame function, Y\nYYYRRR\nYYRYYY\n... -> (Board, Color)
 readGame :: String -> GameState
@@ -32,19 +33,43 @@ showGame (board,color) = fromJust(colorToStr color) : "\n" ++ unlines [catMaybes
 colorToStr :: Color -> Maybe Char
 colorToStr Yellow = Just 'Y'
 colorToStr Red = Just 'R'
-colorToStr _ = Nothing
+
 
 pieceToStr :: Piece -> Maybe Char
 pieceToStr (Full Yellow) = Just 'Y'
 pieceToStr (Full Red) = Just 'R'
 pieceToStr Empty = Just 'E'
-pieceToStr _ = Nothing
-
+-- story 22-27 flags: 
+data Flag = Winner deriving (Eq, Show)
+options :: [OptDescr Flag]
+options =
+  [ Option ['w'] ["winner"]    (NoArg Winner)          "print best move for given game"
+ 
+  ]
 --story 14: IO functions 
 -- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
 main = do
     args <- getArgs
-    if null args
+    let opts@(flags, nonFlags, errors) = getOpt Permute options args
+    
+    if not (null errors) 
+        then putStrLn "extra stuff i think"
+        else if null nonFlags then
+            putStrLn "no file provided"
+        else if Winner `elem` flags 
+            then do
+                let file = head nonFlags
+                contents <- readFile file
+                let
+                    game = readGame contents
+                    move = bestMove game
+                print move
+            else putStrLn "Invalid arguments"
+    
+    
+    
+    {-
+if null args
         then putStrLn "No file provided"
         else do 
             let file = [a | arg <- args, a <- arg] --hahaahaha...
@@ -53,6 +78,8 @@ main = do
                 game = readGame contents
                 move = bestMove game
             print (move)
+    -}
+    
 
 
 
@@ -63,7 +90,6 @@ main = do
     let 
         game = readGame contents
         move = undefined :: Move --bestMove game
-    print (move) -}
-
-
-
+    print (move) 
+    
+    -}

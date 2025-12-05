@@ -1,3 +1,4 @@
+{- HLINT ignore "Redundant if" -}
 module InputOutput where
 import System.Environment
 import Connect
@@ -10,6 +11,7 @@ readGame :: String -> GameState
 readGame str = (stringToBoard str, fromJust (strToColor (head str)))
 
 --stringToBoard :: String -> Board
+stringToBoard :: [Char] -> [[Piece]]
 stringToBoard str = [catMaybes [strToPiece piece| piece <- col]| col <- lst]
     where 
         lst = tail $ lines str
@@ -40,17 +42,22 @@ pieceToStr (Full Yellow) = Just 'Y'
 pieceToStr (Full Red) = Just 'R'
 pieceToStr Empty = Just 'E'
 -- story 22-27 flags: 
-data Flag = Winner deriving (Eq, Show)
+data Flag = Winner | Depth String | Help deriving (Eq, Show)
+
+
 options :: [OptDescr Flag]
 options =
-  [ Option ['w'] ["winner"]    (NoArg Winner)          "print best move for given game"
+  [ Option ['w'] ["winner"]    (NoArg Winner)          "print best move for given game",
+    Option ['d'] ["depth"]     (ReqArg Depth "<#>")    "Allows the user to specify <num> as a cutoff depth.",
+    Option ['h'] ["help"]      (NoArg Help)            "Print usage information and exit."
  
   ]
 --story 14: IO functions 
 -- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
+main :: IO ()
 main = do
     args <- getArgs
-    let opts@(flags, nonFlags, errors) = getOpt Permute options args
+    let opts@(flags, nonFlags, errors) = getOpt Permute options args-- non flags is the file
     
     if not (null errors) 
         then putStrLn "extra stuff i think"
@@ -64,12 +71,36 @@ main = do
                     game = readGame contents
                     move = bestMove game
                 print move
+        else if  hasDepth flags 
+            then do
+                let depth = getDepth flags
+                print depth -- this is for test
+                -- use depth for a funtion that doesnt exist yet and get result and print 
+        else if Help `elem` flags
+            then do 
+                putStrLn "Help message!!!!!!!!!!"
+                
             else putStrLn "Invalid arguments"
+
+
+
     
-    
+getDepth :: [Flag] -> Int
+getDepth [] = 4 --default idk if i shold dd this or use a Maybe
+getDepth (Depth str:_) = read str
+getDepth (_:flags) = getDepth flags
+
+-- i got this from chatgpt but it was the same idea i was trying 
+hasDepth :: [Flag] -> Bool
+hasDepth = any isDepth
+  where
+    isDepth (Depth _) = True
+    isDepth _         = False
     
     {-
-if null args
+main = do
+    args <- getArgs
+    if null args
         then putStrLn "No file provided"
         else do 
             let file = [a | arg <- args, a <- arg] --hahaahaha...
@@ -78,6 +109,7 @@ if null args
                 game = readGame contents
                 move = bestMove game
             print (move)
+
     -}
     
 

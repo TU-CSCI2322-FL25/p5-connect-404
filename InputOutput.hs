@@ -62,27 +62,19 @@ options =
 main :: IO ()
 main = do
     args <- getArgs
-    let opts@(flags, nonFlags, errors) = getOpt Permute options args-- non flags is the file
+    let opts@(flags, nonFlags, errors) = getOpt Permute options args
+    dispatch flags nonFlags errors opts
 
-    if not (null errors) || Help `elem` flags
-        then printHelp opts 
-    
-    else if null flags 
-        then runDepth [Depth "8"] nonFlags -- this is default for story 21
+dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = printHelp opts
+                                     |null flags                             = runDepth [Depth "8"] nonFlags -- this is default for story 21
+                                     |Winner `elem` flags                    = runWinner nonFlags
+                                     |hasDepth flags                         = runDepth flags nonFlags
+                                     |hasMove flags                          = runMove flags nonFlags
+                                     |hasInteractive flags                   = runInteractive flags nonFlags
+                                
 
-    else if Winner `elem` flags 
-        then runWinner nonFlags
-        
-    else if  hasDepth flags 
-        then runDepth flags nonFlags
 
-    else if hasMove flags 
-        then runMove flags nonFlags
-    
-    else if hasInteractive flags
-        then runInteractive flags nonFlags
-
-    else putStrLn "Invalid arguments"
+fileExists nonFlags = undefined
 
 
 --flag functions
@@ -122,14 +114,41 @@ runMove flags nonFlags = do
         newGame = updateGame game move
         gameString =
             if hasVerbose flags 
-            then "something" ++ "\n"++ (showGame newGame)
+            then "rating" ++ "\n"++ (showGame newGame)
             else  showGame newGame
             
     putStrLn gameString
 
 
+
+
+
 runInteractive flags nonFlags = do
-    putStrLn "interactive"
+    putStr "what move do you want "
+    move <- getLine
+    runMove [Move move ] nonFlags 
+    let file = head nonFlags
+    contents <- readFile file
+        game =  readGame contents
+        updateGame game move 
+        checkerers <- checkWinHelper flags nonFlags
+    if(checkerers)
+    then runInteractive flags nonFlags
+    else putStr "game over"
+    
+    
+
+
+checkWinHelper flags nonFlags = do
+    let file = head nonFlags
+    contents <- readFile file
+    let 
+        game = readGame contents
+    
+    return ((gameWinner game) == Nothing )
+
+
+
 ----------------------------------------------
 
 

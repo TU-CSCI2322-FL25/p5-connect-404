@@ -119,33 +119,26 @@ runMove flags nonFlags = do
             
     putStrLn gameString
 
-
-
-
-
+runInteractive :: [Flag] -> [String] -> IO ()
 runInteractive flags nonFlags = do
-    putStr "what move do you want "
-    move <- getLine
-    runMove [Move move ] nonFlags 
-    let file = head nonFlags
-    contents <- readFile file
-        game =  readGame contents
-        updateGame game move 
-        checkerers <- checkWinHelper flags nonFlags
-    if(checkerers)
-    then runInteractive flags nonFlags
-    else putStr "game over"
-    
-    
+    contents <- readFile $ head nonFlags
+    let game = readGame contents
+    interactiveLoop flags game
 
-
-checkWinHelper flags nonFlags = do
-    let file = head nonFlags
-    contents <- readFile file
-    let 
-        game = readGame contents
     
-    return ((gameWinner game) == Nothing )
+interactiveLoop :: [Flag] -> GameState -> IO ()
+interactiveLoop flags game = do
+    putStr "What move do you want? "
+    moveStr <- getLine
+
+    let move = read moveStr :: Int
+        newGame = updateGame game move
+    putStrLn (showGame newGame)
+
+    case gameWinner newGame of
+        Nothing          -> interactiveLoop flags newGame    
+        Just winnerColor -> putStrLn $ "Game over! Winner: " ++ show winnerColor
+
 
 
 

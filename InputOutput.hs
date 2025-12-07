@@ -126,18 +126,26 @@ runInteractive flags nonFlags = do
     interactiveLoop flags game
 
     
-interactiveLoop :: [Flag] -> GameState -> IO ()
+-- interactiveLoop :: [Flag] -> GameState -> IO ()
 interactiveLoop flags game = do
     putStr "What move do you want? "
     moveStr <- getLine
-
     let move = read moveStr :: Int
         newGame = updateGame game move
     putStrLn (showGame newGame)
-
     case gameWinner newGame of
-        Nothing          -> interactiveLoop flags newGame    
-        Just winnerColor -> putStrLn $ "Game over! Winner: " ++ show winnerColor
+        Nothing -> do
+            let newMove   = bestMove newGame
+                newerGame = updateGame newGame newMove
+            putStrLn (showGame newerGame)
+            case gameWinner newerGame of
+                Nothing          -> interactiveLoop flags newerGame
+                Just winnerColor -> 
+                    putStrLn $ "Game over! Winner: " ++ show winnerColor
+        Just winnerColor ->
+            putStrLn $ "Game over! Winner: " ++ show winnerColor
+
+    
 
 
 

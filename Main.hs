@@ -130,20 +130,25 @@ runInteractive flags nonFlags = do
 interactiveLoop flags game = do
     putStr "What move do you want? "
     moveStr <- getLine
-    let move = read moveStr :: Int
+    let move    = read moveStr :: Int
         newGame = updateGame game move
     putStrLn (showGame newGame)
     case gameWinner newGame of
+        Just winnerColor ->
+            putStrLn $ "Game over! Winner: " ++ show winnerColor
         Nothing -> do
-            let newMove   = bestMove newGame
+            let newMove =
+                    if hasDepth flags
+                    then bestMove newGame (getDepth flags)
+                    else bestMove newGame
                 newerGame = updateGame newGame newMove
             putStrLn (showGame newerGame)
             case gameWinner newerGame of
-                Nothing          -> interactiveLoop flags newerGame
-                Just winnerColor -> 
+                Just winnerColor ->
                     putStrLn $ "Game over! Winner: " ++ show winnerColor
-        Just winnerColor ->
-            putStrLn $ "Game over! Winner: " ++ show winnerColor
+                Nothing ->
+                    interactiveLoop flags newerGame
+
 
     
 

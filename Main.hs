@@ -5,6 +5,7 @@ import Connect
 --import Data.Conduit.List (catMaybes)
 import Data.Maybe
 import System.Console.GetOpt -- for flags
+import System.Directory (doesFileExist)
 
 
 
@@ -63,9 +64,23 @@ main :: IO ()
 main = do
     args <- getArgs
     let opts@(flags, nonFlags, errors) = getOpt Permute options args
-    dispatch flags nonFlags errors opts
 
-dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = printHelp opts
+    if null nonFlags then do
+        putStrLn "no file provided" 
+    else do 
+        let file = head nonFlags
+        exists <- doesFileExist file
+
+        if not exists then
+            putStrLn "file does not exist" 
+        else
+            dispatch flags nonFlags errors opts
+
+
+
+   
+
+dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = printHelp opts   
                                      |null flags                             = runDepth [Depth "8"] nonFlags -- this is default for story 21
                                      |Winner `elem` flags                    = runWinner nonFlags
                                      |hasDepth flags                         = runDepth flags nonFlags
@@ -74,7 +89,9 @@ dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = p
                                 
 
 
-fileExists nonFlags = undefined
+
+    
+
 
 
 --flag functions
@@ -139,7 +156,7 @@ interactiveLoop flags game = do
         Nothing -> do
             let newMove =
                     if hasDepth flags
-                    then bestMove newGame (getDepth flags)
+                    then bestMove newGame --(getDepth flags)
                     else bestMove newGame
                 newerGame = updateGame newGame newMove
             putStrLn (showGame newerGame)

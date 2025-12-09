@@ -38,7 +38,7 @@ showGame (board,color) = fromJust(colorToStr color) : "\n" ++ unlines [catMaybes
 colorToStr :: Color -> Maybe Char
 colorToStr Yellow = Just 'Y'
 colorToStr Red = Just 'R'
-
+colorToStr _ = Nothing
 
 pieceToStr :: Piece -> Maybe Char
 pieceToStr (Full Yellow) = Just 'Y'
@@ -212,3 +212,32 @@ hasInteractive = any isInteractive
     isInteractive _         = False
 
     
+pieceToStr _ = Nothing
+
+--story 14: IO functions 
+-- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
+main = do
+    args <- getArgs
+    if null args
+        then putStrLn "No file provided"
+        else do 
+            let file = [a | arg <- args, a <- arg] --hahaahaha...
+            contents <- readFile file
+            let
+                game = readGame contents
+                move = undefined :: Move --bestMove game
+            print (move)
+
+
+
+    {- main = do
+    putStrLn "Enter File Name"
+    fileName <- getLine
+    contents <- readFile fileName
+    let 
+        game = readGame contents
+        move = undefined :: Move --bestMove game
+    print (move) -}
+
+
+

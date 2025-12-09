@@ -2,6 +2,7 @@ module Connect where
 import Data.List
 import Data.Maybe
 import Control.Monad (when)
+import Data.Functor.Contravariant.Divisible (Decidable(choose))
 
 type GameState = (Board, Color) 
 type Move = Int 
@@ -10,15 +11,15 @@ data Piece = Empty | Full Color deriving (Show, Eq)
 data Winner = Won Color | Tie deriving (Show, Eq) 
 type Column = [Piece] 
 data Color = Red | Yellow deriving (Show, Eq)
-
+type Rating = Int
 
 
 --story 2: find the winner
 --SHOULD JUST CHECK BOTH PLAYERS
 gameWinner :: GameState -> Maybe Winner
 gameWinner (board, player) 
-    | checkWin board Yellow  = Just (Won Yellow)
     | checkWin board Red     = Just (Won Red)
+    | checkWin board Yellow  = Just (Won Yellow)
     | isFull board           = Just Tie
     | otherwise              = Nothing
 
@@ -175,22 +176,25 @@ isValidMove n game = n `elem` legalMoves game
 
 --story9branch
 whoWillWin :: GameState -> Winner
-whoWillWin gs@(board,color) = case gameWinner gs of
-    Nothing -> chooseMove listOfFutureGame color
-    Just x  -> x
+whoWillWin gs@(board,color) = 
+    case gameWinner gs of
+        Nothing -> chooseMove winners color --if current game is ongoing, we choose the best move from the list of possible future boards
+        Just x  -> x --if the board alr has a winner, obv we know the winne
     where
-         listOfFutureGame = [updateGame gs x | x <- legalMoves gs] 
+         listOfFutureGame = [updateGame gs x | x <- legalMoves gs] --creates the list of possible future boards
+         winners = [whoWillWin x | x <- listOfFutureGame]
 
 
-chooseMove :: [GameState] -> Color -> Winner
-chooseMove futures color =  if Won color `elem` futureWins 
-                            then Won color 
-                            else if Tie `elem` futureWins 
-                            then Tie 
-                            else Won (opponentColor color)
-                            where
-                                futureWins = [whoWillWin x | x <- futures]
-
+--helper for whoWillWin
+chooseMove :: [Winner] -> Color -> Winner
+chooseMove futures color 
+    | Won color `elem` futures  = Won color
+    | Tie `elem` futures        = Tie
+    | otherwise                 = Won (opponentColor color)
+                               
+--Won: if there is atleast 1 board in which the current player is guaranteed to win, return Won Player
+--Tie: if there is no board in which the current player can win, but there is a way to force a tie, return Tie 
+--Other player won : otherwise, there is no way for the current player to win or to tie, so the opposite player is gonna win
 
 --story 10
 bestMove :: GameState -> Move
@@ -199,16 +203,141 @@ bestMove game@(board,color) =
         then error "BLOW UP AHHHHH" 
         else
             case lookup (Won color) lookUpList of
-                Just x ->  x
+                Just x ->  x                        -- looks for a win, then returns move paired with that
                 Nothing -> 
-                    case lookup Tie lookUpList of
+                    case lookup Tie lookUpList of   -- if no win, looks for a tie, returns paired move
                         Just x ->  x
                         Nothing -> snd $ head lookUpList
     where
-        lookUpList = [(whoWillWin (updateGame game x),x) | x <- legalList]
-        filterForWin win = filter(\x -> snd x == win) lookUpList
-        legalList = legalMoves game
+        lookUpList = [(whoWillWin (updateGame game x),x) | x <- legalList] --predicts the outcome for each move ((Winner,move))
+        filterForWin win = filter(\x -> snd x == win) lookUpList --not needed? 
+        legalList = legalMoves game -- lst of all possible legal moves
 
+
+--story17
+--Red is player 1 (positive)
+--yellow is player 2 (negative)
+
+ratingOfWinner :: Color -> Rating
+ratingOfWinner player 
+    | player == Red     = 1000
+    | player == Yellow  = -1000
+
+rateGame :: GameState -> Rating
+rateGame gs@(board, player) 
+    | isFull board                 = 0 --adding tie???
+    | checkWin board player        = ratingOfWinner player
+    | otherwise                    = rateColumns gs + rateRowsAndDiagonals gs
+
+--seperate function for top two lines 
+gradeFourPieces :: [Piece] -> Rating 
+gradeFourPieces lst
+    | numRed == 0     = numYellow
+    | numYellow == 0  = numRed
+    | otherwise       = 0
+        where
+            numYellow = countPieces Yellow lst
+            numRed = countPieces Red lst
+            countPieces player [] = 0
+            countPieces player (p1:rest)  
+                | Full player == p1     = countPieces player rest +1
+                | otherwise             = countPieces player rest
+
+
+rateColumns :: GameState -> Rating 
+rateColumns gs@(board, player) = sum (map checkVertical board)
+   where
+        checkVertical (s1:rest@(s2:s3:s4:_)) = gradeFourPieces [s1, s2 ,s3 ,s4] + checkVertical rest
+        checkVertical _ = 0  
+        
+
+rateRowsAndDiagonals :: GameState -> Rating
+rateRowsAndDiagonals ((c1:c2:c3:c4:rest), player) = checkARow c1 c2 c3 c4 + checkARow c1 (drop 1 c2) (drop 2 c3) (drop 3 c4) + 
+                                                   checkARow (drop 3 c1) (drop 2 c2) (drop 1 c3) c4 + rateRowsAndDiagonals ((c2:c3:c4:rest), player)
+        where
+            checkARow (sA:c1) (sB:c2) (sC:c3) (sD:c4) = gradeFourPieces [sA, sB ,sC ,sD]
+rateRowsAndDiagonals _ = 0
+
+------------story 18
+{- currentPlayerIsMax :: GameState -> Bool
+currentPlayerIsMax (_, Red) = True
+currentPlayerIsMax (_, Yellow) = False
+
+whoMightWin :: GameState -> Int -> (Rating, Maybe Move)
+whoMightWin gs depth = minimax gs depth True
+
+minimax :: GameState -> Int -> Bool -> (Rating, Maybe Move)
+minimax gs depth isRoot
+    | Just (Won c) <- gameWinner gs = (ratingOfWinner c, Nothing)  
+    | Just Tie <- gameWinner gs     = (0, Nothing) 
+    | depth == 0                    = (rateGame gs, Nothing)
+    | otherwise = 
+        let moves = legalMoves gs
+            nextStates = [updateGame gs mv | mv <- moves]
+            scored = [(fst(minimax st (depth-1) False), mv) | (st,mv) <- zip nextStates moves]
+        in
+            if currentPlayerIsMax gs
+                then chooseBestMax scored isRoot
+                else chooseBestMin scored isRoot
+
+chooseBestMax :: [(Rating,Move)] -> Bool -> (Rating, Maybe Move)
+chooseBestMax scored isRoot = 
+    let (bestRating, bestMove) = maximumBy (\(r1,_)(r2,_) -> compare r1 r2) scored
+    in 
+        if isRoot then (bestRating, Just bestMove)
+                  else (bestRating, Nothing)
+chooseBestMin :: [(Rating,Move)] -> Bool -> (Rating, Maybe Move)
+chooseBestMin scored isRoot = 
+    let (bestRating, bestMove) = minimumBy (\(r1,_) (r2,_) -> compare r1 r2) scored
+    in
+        if isRoot then (bestRating, Just bestMove)
+                  else (bestRating, Nothing)
+goodMove :: GameState -> Int -> Move
+goodMove gs depth =
+    case whoMightWin gs depth of
+        (_,Just mv) -> mv
+        (_,Nothing) -> error "no legal moves" -}
+                              
+
+---trying
+currentPlayerIsMax :: GameState -> Bool
+currentPlayerIsMax (_, Red) = True
+currentPlayerIsMax (_, Yellow) = False
+
+whoMightWin :: GameState -> Int -> (Rating, Maybe Move)
+whoMightWin gs depth = minimax gs depth True
+
+minimax :: GameState -> Int -> Bool -> (Rating, Maybe Move)
+minimax gs depth isRoot
+    | Just (Won c) <- gameWinner gs = (ratingOfWinner c, Nothing)  
+    | Just Tie <- gameWinner gs     = (0, Nothing) 
+    | depth == 0                    = (rateGame gs, Nothing)
+    | otherwise = 
+        let moves = legalMoves gs
+            nextStates = [updateGame gs mv | mv <- moves]
+            scored = [(fst(minimax st (depth-1) False), mv) | (st,mv) <- zip nextStates moves]
+        in
+            if currentPlayerIsMax gs
+                then chooseBestM scored isRoot maximumBy
+                else chooseBestM scored isRoot minimumBy
+
+--chooseBestM :: [(Rating,Move)] -> Bool ->  (Rating, Maybe Move)
+chooseBestM scored isRoot m = 
+    let (bestRating, bestMove) = m (\(r1,_) (r2,_) -> compare r1 r2) scored
+    in 
+        if isRoot then (bestRating, Just bestMove)
+                  else (bestRating, Nothing)
+goodMove :: GameState -> Int -> Move
+goodMove gs depth =
+    case whoMightWin gs depth of
+        (_,Just mv) -> mv
+        (_,Nothing) -> error "no legal moves"
+
+
+
+     
+
+   
 
 
 

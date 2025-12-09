@@ -95,8 +95,24 @@ testpleaseWorkDiagonalWin = gameWinner testBoard --expected: won yellow
     where
         testBoard = ([[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Full Yellow, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]], Red)
 
-testTieWin = gameWinner testBoard
+testYellowDiagonalWin = gameWinner testBoard
     where
         testBoard = ([[Full Yellow, Full Yellow, Full Yellow, Full Red, Full Red, Full Red],[Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow, Full Yellow],[Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow],[Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Red],[Full Red, Full Yellow, Full Red, Full Yellow, Full Red, Full Red],[Full Red, Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow]],Yellow)
 gameStart :: GameState
 gameStart = (emptyBoard, Red)
+
+testTieGS = ([[Full Yellow, Full Yellow, Full Yellow, Full Red, Full Red, Full Red],[Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow, Full Yellow],[Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow],[Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Red],[Full Red, Full Yellow, Full Red, Full Yellow, Full Red, Full Red],[Full Red, Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow]],Yellow)
+testTieBoard = [[Full Yellow, Full Yellow, Full Yellow, Full Red, Full Red, Full Red],[Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow, Full Yellow],[Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow],[Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Red],[Full Red, Full Yellow, Full Red, Full Yellow, Full Red, Full Red],[Full Red, Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow]]
+--problem: testTieBoard should return false for checkRowandDiagonals when it should be false
+
+
+--expected: false
+testDiagonal = [[Empty, Empty, Empty, Empty, Empty, Full Red],[Empty, Empty, Full Red, Full Red, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Yellow, Full Red],[Empty, Empty, Full Yellow, Full Yellow, Full Red, Full Yellow],[Empty, Empty, Empty, Full Red, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Empty, Empty, Empty]]
+
+shouldBeTie = [[Full Red, Full Red, Full Yellow, Full Red, Full Yellow, Full Yellow], [Full Yellow, Full Red, Full Red, Full Yellow, Full Yellow, Full Yellow], [Full Yellow, Full Red, Full Red, Full Yellow, Full Red, Full Red], [Full Yellow, Full Yellow, Full Red, Full Yellow, Full Red, Full Red], [Full Red, Full Yellow, Full Yellow, Full Red, Full Yellow, Full Yellow], [Full Red, Full Red, Full Yellow, Full Red, Full Yellow, Full Yellow], [Full Yellow, Full Red, Full Red, Full Red, Full Yellow, Full Yellow]]
+
+
+--expected (1000, Nothing)
+testDiagonalWin = ([[Empty, Empty, Empty, Empty, Empty, Empty],[Empty, Empty, Empty, Empty, Full Yellow, Full Yellow],[Empty, Empty, Empty, Empty, Full Yellow, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Red],[Empty, Empty, Empty, Empty, Full Red, Full Yellow],[Empty, Empty, Empty, Empty, Full Red, Full Yellow], [Empty, Empty, Empty, Empty, Full Red, Full Yellow]], Yellow)
+
+testGreatRedPosition = ([[Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Empty], [Empty, Empty, Empty, Empty, Empty, Full Yellow], [Empty, Empty, Empty, Full Red, Full Red, Full Red], [Empty, Empty, Empty, Empty, Empty, Full Yellow], [Empty, Empty, Empty, Empty, Empty, Full Yellow], [Empty, Empty, Empty, Empty, Empty, Empty]], Yellow)

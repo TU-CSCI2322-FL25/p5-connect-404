@@ -59,7 +59,7 @@ options =
 
   ]
 --story 14: IO functions 
--- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -156,7 +156,7 @@ interactiveLoop flags game = do
         Nothing -> do
             let newMove =
                     if hasDepth flags
-                    then bestMove newGame --(getDepth flags)
+                    then bestMove newGame --(getDepth flags) or snd $ whoMightWin newGame (getDepth flags)
                     else bestMove newGame
                 newerGame = updateGame newGame newMove
             putStrLn (showGame newerGame)

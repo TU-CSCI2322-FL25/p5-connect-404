@@ -259,47 +259,6 @@ rateRowsAndDiagonals ((c1:c2:c3:c4:rest), player) = checkARow c1 c2 c3 c4 + chec
 rateRowsAndDiagonals _ = 0
 
 ------------story 18
-{- currentPlayerIsMax :: GameState -> Bool
-currentPlayerIsMax (_, Red) = True
-currentPlayerIsMax (_, Yellow) = False
-
-whoMightWin :: GameState -> Int -> (Rating, Maybe Move)
-whoMightWin gs depth = minimax gs depth True
-
-minimax :: GameState -> Int -> Bool -> (Rating, Maybe Move)
-minimax gs depth isRoot
-    | Just (Won c) <- gameWinner gs = (ratingOfWinner c, Nothing)  
-    | Just Tie <- gameWinner gs     = (0, Nothing) 
-    | depth == 0                    = (rateGame gs, Nothing)
-    | otherwise = 
-        let moves = legalMoves gs
-            nextStates = [updateGame gs mv | mv <- moves]
-            scored = [(fst(minimax st (depth-1) False), mv) | (st,mv) <- zip nextStates moves]
-        in
-            if currentPlayerIsMax gs
-                then chooseBestMax scored isRoot
-                else chooseBestMin scored isRoot
-
-chooseBestMax :: [(Rating,Move)] -> Bool -> (Rating, Maybe Move)
-chooseBestMax scored isRoot = 
-    let (bestRating, bestMove) = maximumBy (\(r1,_)(r2,_) -> compare r1 r2) scored
-    in 
-        if isRoot then (bestRating, Just bestMove)
-                  else (bestRating, Nothing)
-chooseBestMin :: [(Rating,Move)] -> Bool -> (Rating, Maybe Move)
-chooseBestMin scored isRoot = 
-    let (bestRating, bestMove) = minimumBy (\(r1,_) (r2,_) -> compare r1 r2) scored
-    in
-        if isRoot then (bestRating, Just bestMove)
-                  else (bestRating, Nothing)
-goodMove :: GameState -> Int -> Move
-goodMove gs depth =
-    case whoMightWin gs depth of
-        (_,Just mv) -> mv
-        (_,Nothing) -> error "no legal moves" -}
-                              
-
----trying
 currentPlayerIsMax :: GameState -> Bool
 currentPlayerIsMax (_, Red) = True
 currentPlayerIsMax (_, Yellow) = False

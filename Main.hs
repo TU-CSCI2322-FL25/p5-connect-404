@@ -6,6 +6,7 @@ import Connect
 import Data.Maybe
 import System.Console.GetOpt -- for flags
 import System.Directory (doesFileExist)
+import Data.List (isInfixOf)
 
 
 
@@ -16,29 +17,29 @@ readGame str = (stringToBoard str, fromJust (strToColor (head str)))
 --stringToBoard :: String -> Board
 stringToBoard :: [Char] -> [[Piece]]
 stringToBoard str = [catMaybes [strToPiece piece| piece <- col]| col <- lst]
-    where 
+    where
         lst = tail $ lines str
 
-strToColor :: Char -> Maybe Color 
+strToColor :: Char -> Maybe Color
 strToColor 'Y' = Just Yellow
 strToColor 'R' = Just Red
 strToColor _ = Nothing
 
 
-strToPiece :: Char -> Maybe Piece 
+strToPiece :: Char -> Maybe Piece
 strToPiece 'Y' = Just (Full Yellow)
 strToPiece 'R' = Just (Full Red)
 strToPiece 'E' = Just Empty
 strToPiece _ = Nothing
 
 --story 13: showGame function, (Board,Color)
-showGame :: GameState -> String 
-showGame (board,color) = fromJust(colorToStr color) : "\n" ++ unlines [catMaybes [pieceToStr piece | piece <- col ]|col <- board]  -- This is the part we need to fix! 
+showGame :: GameState -> String
+showGame (board,color) = fromJust (colorToStr color) : "\n" ++ unlines [catMaybes [pieceToStr piece | piece <- col ]|col <- board]  -- This is the part we need to fix! 
 
 colorToStr :: Color -> Maybe Char
 colorToStr Yellow = Just 'Y'
 colorToStr Red = Just 'R'
-colorToStr _ = Nothing
+
 
 pieceToStr :: Piece -> Maybe Char
 pieceToStr (Full Yellow) = Just 'Y'
@@ -64,40 +65,38 @@ main :: IO ()
 main = do
     args <- getArgs
     let opts@(flags, nonFlags, errors) = getOpt Permute options args
-
-    if null nonFlags then do
-        putStrLn "no file provided" 
-    else do 
+    if not (null errors) then do
+        printHelp opts
+    else if null nonFlags then do
+        putStrLn "no file provided"
+    else do
         let file = head nonFlags
         exists <- doesFileExist file
 
         if not exists then
-            putStrLn "file does not exist" 
+            putStrLn "file does not exist"
         else
             dispatch flags nonFlags errors opts
 
 
 
-   
 
-dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = printHelp opts   
-                                     |null flags                             = runDepth [Depth "8"] nonFlags -- this is default for story 21
-                                     |Winner `elem` flags                    = runWinner nonFlags
-                                     |hasDepth flags                         = runDepth flags nonFlags
+
+dispatch flags nonFlags errors opts  |not (null errors) || Help `elem` flags = printHelp opts
+                                     |null flags                             = runDepth [Depth "5"] nonFlags -- i think five is the lowest for the start of the game it takes like 4 secs on my computer:)
+                                     |Winner `elem` flags                    = runWinner nonFlags           
+                                     |hasDepth flags && not (hasInteractive flags) = runDepth flags nonFlags -- i added the and thing because if i have i & d it just ran d 
                                      |hasMove flags                          = runMove flags nonFlags
                                      |hasInteractive flags                   = runInteractive flags nonFlags
-                                
 
 
-
-    
 
 
 
 --flag functions
 printHelp :: ([Flag], [String], [String]) -> IO ()
 printHelp (flags, inputs, errors) =
-  do putStrLn $ show (flags,inputs,errors) 
+  do putStrLn $ show (flags,inputs,errors)
      putStrLn $ concat errors
      putStrLn $ usageInfo "Fortunes [options] [files]" options
 
@@ -111,29 +110,37 @@ runWinner nonFlags = do
     print move
 
 
-runDepth flags nonFlags = do 
+runDepth :: [Flag] -> [String] -> IO ()
+runDepth flags nonFlags = do
     let depth = getDepth flags
-    --file = head nonFlags 
-    --contents <- readFile
-    --let
-        --game = readGame contents
-        --(rating move) = whoMightWin game depth
-    --print rating ++ move
-    print depth -- this is for test
-    
+        file  = head nonFlags
+
+    contents <- readFile file
+
+    let game = readGame contents
+        (rating, move) = whoMightWin game depth
+        moveStr = fromMaybe 9 move -- basically this make an imposible move if the board is full
+    if moveStr == 9 --this then checks for that move 
+        then
+            print "no moves possible board is full"
+        else
+            print moveStr
+
+
+
 
 runMove flags nonFlags = do
     let file = head nonFlags
     contents <- readFile file
-    let 
+    let
         move = getMove flags
         game = readGame contents
         newGame = updateGame game move
         gameString =
-            if hasVerbose flags 
+            if hasVerbose flags
             then "rating" ++ "\n"++ (showGame newGame)
             else  showGame newGame
-            
+
     putStrLn gameString
 
 runInteractive :: [Flag] -> [String] -> IO ()
@@ -142,7 +149,7 @@ runInteractive flags nonFlags = do
     let game = readGame contents
     interactiveLoop flags game
 
-    
+
 -- interactiveLoop :: [Flag] -> GameState -> IO ()
 interactiveLoop flags game = do
     putStr "What move do you want? "
@@ -154,10 +161,11 @@ interactiveLoop flags game = do
         Just winnerColor ->
             putStrLn $ "Game over! Winner: " ++ show winnerColor
         Nothing -> do
-            let newMove =
+            let depth = 
                     if hasDepth flags
-                    then bestMove newGame --(getDepth flags) or snd $ whoMightWin newGame (getDepth flags)
-                    else bestMove newGame
+                    then getDepth flags
+                    else 5 --default
+                newMove = fromMaybe 0 $ snd $ whoMightWin newGame depth
                 newerGame = updateGame newGame newMove
             putStrLn (showGame newerGame)
             case gameWinner newerGame of
@@ -167,7 +175,7 @@ interactiveLoop flags game = do
                     interactiveLoop flags newerGame
 
 
-    
+
 
 
 
@@ -205,39 +213,9 @@ hasVerbose = any isVerbose
     isVerbose (Verbose) = True
     isVerbose _         = False
 
+
 hasInteractive :: [Flag] -> Bool
 hasInteractive = any isInteractive
   where
     isInteractive (Interactive) = True
     isInteractive _         = False
-
-    
-pieceToStr _ = Nothing
-
---story 14: IO functions 
--- main takes file? uses readGame to turn into a GameState then uses BestMove and prints answer
-main = do
-    args <- getArgs
-    if null args
-        then putStrLn "No file provided"
-        else do 
-            let file = [a | arg <- args, a <- arg] --hahaahaha...
-            contents <- readFile file
-            let
-                game = readGame contents
-                move = undefined :: Move --bestMove game
-            print (move)
-
-
-
-    {- main = do
-    putStrLn "Enter File Name"
-    fileName <- getLine
-    contents <- readFile fileName
-    let 
-        game = readGame contents
-        move = undefined :: Move --bestMove game
-    print (move) -}
-
-
-

@@ -65,10 +65,11 @@ main :: IO ()
 main = do
     args <- getArgs
     let opts@(flags, nonFlags, errors) = getOpt Permute options args
+    --print opts 
     if not (null errors) then do
         printHelp opts
     else if null nonFlags then do
-        putStrLn "no file provided"
+        putStrLn "no file provided or flag is missing parameter(-d and -m need an int)" --because when d doesnt have an int the file gets added to the flags and i dont know how to fix this
     else do
         let file = head nonFlags
         exists <- doesFileExist file

@@ -200,7 +200,7 @@ chooseMove futures color
 bestMove :: GameState -> Move
 bestMove game@(board,color) = 
     if null legalList 
-        then error "BLOW UP AHHHHH" 
+        then error "no more legal moves for that game" 
         else
             case lookup (Won color) lookUpList of
                 Just x ->  x                        -- looks for a win, then returns move paired with that

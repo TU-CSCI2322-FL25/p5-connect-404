@@ -159,6 +159,8 @@ interactiveLoop flags game = do
         newGame = updateGame game move
     putStrLn (showGame newGame)
     case gameWinner newGame of
+        Just Tie ->
+            putStrLn "Game over! TIE"
         Just winnerColor ->
             putStrLn $ "Game over! Winner: " ++ show winnerColor
         Nothing -> do
@@ -166,8 +168,8 @@ interactiveLoop flags game = do
                     if hasDepth flags
                     then getDepth flags
                     else 5 --default
-                newMove = fromMaybe 0 $ snd $ whoMightWin newGame depth
-                newerGame = updateGame newGame newMove
+                newMove = fromMaybe 9 $ snd $ whoMightWin newGame depth -- this will never be nothing because it will run into an error earlier if the board is full so the 9 value doesnt matter
+                newerGame = updateGame newGame newMove                      
             putStrLn (showGame newerGame)
             case gameWinner newerGame of
                 Just winnerColor ->
